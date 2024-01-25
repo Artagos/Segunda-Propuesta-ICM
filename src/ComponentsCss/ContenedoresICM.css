@@ -16,7 +16,8 @@
 }
               
 .aux-inf-side{
-    padding: 70px;
+    height: 70%;
+    padding-left: 10%;
     
 }
 
@@ -31,6 +32,7 @@
 }
 .img-side img{
     width: 100%;
+    
     padding: 50px;
 }
 .event-title {
