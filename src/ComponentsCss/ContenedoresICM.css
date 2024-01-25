@@ -1,0 +1,48 @@
+.event-container {
+    width: 100%;
+    display: flex;
+    
+    background-color: #ed8500;
+    
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.inf-side{
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: left;
+}
+              
+.aux-inf-side{
+    padding: 70px;
+    
+}
+
+
+
+.img-side{
+    width: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+}
+.img-side img{
+    width: 100%;
+    padding: 50px;
+}
+.event-title {
+    text-transform: uppercase;
+    font-size: 20px;
+    font-weight: bold;
+    color: #ffffff;;
+    margin-bottom: 10px;
+}
+
+.event-details {
+    font-size: 10px;
+
+    line-height: 1.5;
+}

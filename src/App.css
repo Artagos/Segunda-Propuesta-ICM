@@ -1,0 +1,77 @@
+@font-face {
+  font-family: 'titleFont';
+  src: url(./ComponentsCss/BwDariusDEMO-Bold.otf)format('otf');
+  font-family: 'h4font';
+  src: url(./ComponentsCss/BwDariusDEMO-Regular.otf)format('otf');
+  font-family: "Montserrat Regular";
+    src: url("https://db.onlinewebfonts.com/t/0462590be6674a5827956be5045c54de.eot");
+    src: url("https://db.onlinewebfonts.com/t/0462590be6674a5827956be5045c54de.eot?#iefix")format("embedded-opentype"),
+    url("https://db.onlinewebfonts.com/t/0462590be6674a5827956be5045c54de.woff2")format("woff2"),
+    url("https://db.onlinewebfonts.com/t/0462590be6674a5827956be5045c54de.woff")format("woff"),
+    url("https://db.onlinewebfonts.com/t/0462590be6674a5827956be5045c54de.ttf")format("truetype"),
+    url("https://db.onlinewebfonts.com/t/0462590be6674a5827956be5045c54de.svg#Montserrat Regular")format("svg");
+
+}
+h1{
+  color: #ffffff;
+  font-family: 'titleFont';
+}
+h4{
+  color: #ffffff;
+  font-family: 'h4font';
+}
+p{
+  color: #ffffff;
+  font-family: "Montserrat Regular";
+}
+sub{
+  color: #ffffff;
+  font-family: "Montserrat Regular";
+  text-transform: uppercase;
+}
+
+
+
+.App {
+  text-align: center;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  background-color: #f0f0f0; /* Change this to your preferred background color */
+  color: #ffffff;
+}
+
+header {
+  background-color: #000; /* Black color for the header */
+  color: #fff; /* White text for the header */
+  padding: 10px 20px;
+  text-align: left;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+nav {
+  background-color: #000; /* Dark gray color for the navbar */
+  padding: 10px;
+}
+
+nav ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  text-align: right;
+}
+
+nav li {
+  display: inline-block;
+  margin-right: 20px;
+}
+
+nav a {
+  text-decoration: none;
+  color: #fff; /* White color for the navbar links */
+  font-weight: bold;
+  font-size: 16px;
+}
