@@ -48,3 +48,32 @@
 
     line-height: 1.5;
 }
+
+.buttonC {
+    width: fit-content;
+    margin-left: 60px;
+    display: inline-block;
+    padding: 9px 17px;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+    text-decoration: none;
+    color: #fff;
+    background-color: #000;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in-out;
+}
+
+.buttonC:hover {
+    background-color: #333; /* Darker color on hover */
+}
+
+@media (max-width: 768px) {
+    /* Adjust styles for smaller screens if necessary */
+    .buttonC {
+        display: block;
+        width: fit-content;
+        margin-bottom: 10px;
+    }
+}
