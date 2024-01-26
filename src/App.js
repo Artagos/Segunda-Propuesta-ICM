@@ -1,4 +1,5 @@
 import ContenedorICM from './Componentes/ContenedoresICM';
+import CCF from './Componentes/ContenedorConFondo';
 import './App.css';
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
     </ul>
 </nav>
 
+    <CCF/>
     <ContenedorICM/>
     </div>
   );
