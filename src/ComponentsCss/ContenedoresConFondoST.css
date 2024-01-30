@@ -1,31 +1,32 @@
-.firstT-word{
-    color:#ed8500 ;
+.firstT-wordST{
+    color:#000000 ;
 }
-.containerF {
+.containerFST{
     position: relative;
     height: 100vh; /* Adjust the height as needed */
-    background: url('https://kawai.com.au/wp-content/uploads/2023/05/Aging-piano-scaled.jpeg') center/cover no-repeat; /* Replace 'your-image.jpg' with your image URL */
-    display: flex;
+    background: url('https://amateurphotographer.com/wp-content/uploads/sites/7/2023/03/general-pic-7.jpg?w=1000') center/cover no-repeat; /* Replace 'your-image.jpg' with your image URL */
+    display: block ruby;
     align-items: center;
 }
 
-.contentF {
-    /* Semi-transparent white background for better readability */
+.contentFST {
+    
     padding: 20px;
     max-width: 50%;
     margin-left: 20px; /* Adjust as needed */
-    text-align: left;
+    text-align: center;
 }
 
-.titleF {
+.titleFST {
     font-size: 60px;
     font-weight: bold;
     line-height: 1.2;
     margin-bottom: 10px;
     text-transform: uppercase;
+    text-align: left;
 }
 
-.paragraphF {
+.paragraphFST {
     font-size: 10px;
     line-height: 1.5;
     
@@ -33,11 +34,11 @@
 
 @media (max-width: 900px) {
     /* Adjust styles for smaller screens if necessary */
-    .contentF {
+    .contentFST {
         max-width: 100%;
         margin: 20px;
     }
-    .containerF{
+    .containerFST{
         height: 100%;
     }
 }

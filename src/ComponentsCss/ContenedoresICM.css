@@ -17,6 +17,7 @@
               
 .aux-inf-side{
     
+    padding-top: 10px;
     padding-left: 10%;
     
 }
@@ -52,6 +53,7 @@
 .buttonC {
     width: fit-content;
     margin-left: 60px;
+    margin-bottom: 10px;
     display: inline-block;
     padding: 9px 17px;
     font-size: 14px;
@@ -69,11 +71,39 @@
     background-color: #333; /* Darker color on hover */
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
     /* Adjust styles for smaller screens if necessary */
     .buttonC {
         display: block;
         width: fit-content;
         margin-bottom: 10px;
+    }
+    .event-container{
+        display: block;
+        justify-content: center;
+    }
+    .img-side img{
+        width: 100%;
+        
+        padding: 10px;
+        
+    }
+    .img-side{
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        
+    }
+    .aux-inf-side{
+        width: 90%;
+        
+    }
+    .inf-side{
+        width: 90%;
+        display: block;
+        
+        justify-content: center;
+        text-align: left;
     }
 }
