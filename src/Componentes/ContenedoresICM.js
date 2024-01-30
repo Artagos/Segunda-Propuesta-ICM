@@ -5,7 +5,7 @@ const ContenedorICM=()=>{
     var breakWidth= width<900
     console.log(width)
     return(
-<div>
+<div style={{width: width}}>
     {!breakWidth?<div class="event-container"><div class="inf-side">
         <div class="aux-inf-side">
             <div class="event-title">Historia</div>
