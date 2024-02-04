@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class NovedadesYNoticiasConfig(AppConfig):
+class QuienesSomosConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'apps.novedades_y_noticias'
+    name = 'apps.quienes_somos'
