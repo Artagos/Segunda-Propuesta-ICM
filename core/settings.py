@@ -45,7 +45,7 @@ DJANGO_APPS = [
 ]
 
 PROJECT_APPS = [
-    
+    'apps.temp'
 ]
 
 THIRD_PARTY_APPS = [
@@ -146,7 +146,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'es'
 
-TIME_ZONE = 'UTC-5'
+TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
