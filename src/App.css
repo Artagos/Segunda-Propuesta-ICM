@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 @font-face {
   font-family: 'titleFont';
   src: url(./ComponentsCss/BwDariusDEMO-Bold.otf)format('otf');
@@ -51,28 +52,4 @@ header {
   padding: 10px 20px;
   text-align: left;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-nav {
-  background-color: #000; /* Dark gray color for the navbar */
-  padding: 10px;
-}
-
-nav ul {
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
-  text-align: right;
-}
-
-nav li {
-  display: inline-block;
-  margin-right: 20px;
-}
-
-nav a {
-  text-decoration: none;
-  color: #fff; /* White color for the navbar links */
-  font-weight: bold;
-  font-size: 16px;
 }
