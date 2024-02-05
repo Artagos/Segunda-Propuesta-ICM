@@ -45,14 +45,8 @@ DJANGO_APPS = [
 ]
 
 PROJECT_APPS = [
-    'apps.temp',
-    'apps.banner_principal',
-    'apps.contactos',
-    'apps.eventos',
-    'apps.multimedios',
-    'apps.novedades_y_noticias',
-    'apps.premio_nacional_de_musica',
-    'apps.quienes_somos'
+    'apps.entidades',
+    
 ]
 
 THIRD_PARTY_APPS = [

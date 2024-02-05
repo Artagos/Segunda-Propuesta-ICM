@@ -22,14 +22,8 @@ from django.conf import settings
 
 urlpatterns = [
         
-    # path('api/temp/', include('apps.temp.urls')),
-    path('api/banner_principal/', include('apps.banner_principal.urls')),
-    path('api/contactos/', include('apps.contactos.urls')),
-    path('api/eventos/', include('apps.eventos.urls')),
-    path('api/multimedios/', include('apps.multimedios.urls')),
-    path('api/novedades_y_noticias/', include('apps.novedades_y_noticias.urls')),
-    path('api/premio_nacional_de_musica/', include('apps.premio_nacional_de_musica.urls')),
-    path('api/quienes_somos/', include('apps.quienes_somos.urls')),
+    path('api/entidades/', include('apps.entidades.urls')),
+    
 
     
     path('admin/', admin.site.urls),
