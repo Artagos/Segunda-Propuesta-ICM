@@ -37,7 +37,10 @@ class BannerPrincipal(models.Model):
         ('Efemeride', 'Contenedor: Efemeride'),
     ]
     
+    
+    
     tipo_contenedor = models.CharField(max_length=50, choices=CONTENEDOR_CHOICES)
+    #posicion_en_pantalla = models.PositiveIntegerField(unique=True)
     seleccionar_efemeride = models.ForeignKey('Efemerides', on_delete=models.CASCADE, related_name='banner_principal', null=True)
     seleccionar_acontecimiento = models.ForeignKey('Acontecimiento', on_delete=models.CASCADE, related_name='banner_principal', null=True)
     seleccionar_evento = models.ForeignKey('Evento', on_delete=models.CASCADE, related_name='banner_principal', null=True)
@@ -78,10 +81,30 @@ class BannerPrincipal(models.Model):
     tipografia_descripcion = models.CharField(max_length=50, choices=TEXT_TIPOGRAPHY_CHOICES, null=True)
     tipografia_enlace = models.CharField(max_length=50, choices=TEXT_TIPOGRAPHY_CHOICES, null=True)
 
+
+    numero_unico = models.PositiveIntegerField(unique=True, blank=True, null=True)
+    
     def __str__(self):
         return self.tipo_contenedor
-
-
+    
+class Seccion_Efemerides (models.Model):
+    
+    seleccionar_efemeride = models.ForeignKey('Efemerides', on_delete=models.CASCADE, related_name='seccion_efemerides', null=True)
+    TEXT_COLOR_CHOICES = [
+        ('#000000', 'negro'),
+        ('#ffffff','blanco'),
+        ('#4f4f4f', 'gris'),
+        ('#29385c', 'azul'),
+        ('36454d', 'verde'),
+        ('0d032b', 'malva'),
+        ('ed8500', 'naranja'),
+    ]
+    color_de_fondo = models.CharField(max_length=7, choices=TEXT_COLOR_CHOICES, null=True)
+    numero_unico = models.PositiveIntegerField(unique=True, blank=True, null=True)
+    
+    def __str__(self):
+        return self.seleccionar_efemeride.titulo
+    
 
 class Evento (models.Model):
     título = models.CharField(max_length=100, default='None')

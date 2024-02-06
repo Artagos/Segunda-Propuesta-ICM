@@ -3,17 +3,20 @@ from datetime import datetime, timedelta
 from calendar import monthrange
 from django.http import JsonResponse
 from .models import Efemerides, Acontecimiento, Evento, Centros_y_Empresas, Directores, Historia_de_la_Institución, Multimedia, Premio_Nacional_de_Música
-from .models import BannerPrincipal
+from .models import BannerPrincipal, Seccion_Efemerides
 
 
-def banner_template(request, tipo_contenedor):
-    instances = BannerPrincipal.objects.filter(tipo_contenedor=tipo_contenedor)
-    
-    return JsonResponse(list(instances), safe= false)
+def get_banner_principal(request):
+    contenedores = BannerPrincipal.objects.all().order_by('numero_unico').values()
+    return JsonResponse(list(contenedores), safe= false)
+
+def get_seccion_efemerides(request):
+    contenedores = Seccion_Efemerides.objects.all().order_by('numero_unico').values()
+    return JsonResponse(list(contenedores), safe=false)
     
 # Create your views here.
 def get_all_efem(request):
-    efemerides = Efemerides.objects.all().values()
+    efemerides = Efemerides.objects.all().order_by().values()
     return JsonResponse(list(efemerides), safe= false)
 
 def get_efem_premio(request):
