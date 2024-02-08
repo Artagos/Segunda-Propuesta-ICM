@@ -5,7 +5,7 @@ import axios from 'axios';
 const Main =()=>{
     const [elements,setElements]=React.useState();
     React.useEffect(()=>{
-        axios.get('http://localhost:3000/api/entidades/seccion/banner/')
+        axios.get('/api/entidades/seccion/banner/')
         .then(response => {
             console.log(response.data);
           setElements(response.data);
