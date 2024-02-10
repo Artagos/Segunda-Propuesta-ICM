@@ -1,11 +1,10 @@
 import '../ComponentsCss/ContenedoresConFondoST.css'
-const CCFST=()=>{
+const CCFST=({fondo,titulo})=>{
     return(
-        <div class="containerFST">
+        <div class="containerFST" style={{background: 'url('+fondo+')'}}>
             <div class="contentFST">
                 <div class="titleFST">
-                <span className='firstT-wordST'>Centros</span><br/>
-            Y empresas
+                {titulo}
                 </div>
                 </div>
         </div>

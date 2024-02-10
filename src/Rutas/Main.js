@@ -2,8 +2,11 @@ import React from "react"
 import CCF from "../Componentes/ContenedorConFondo"
 import ContenedorICM from "../Componentes/ContenedoresICM"
 import axios from 'axios';
+import { MiniParser } from "./MiniParser";
 const Main =()=>{
-    const [elements,setElements]=React.useState();
+    const [elements,setElements]=React.useState([]);
+    
+    //Fetching data
     React.useEffect(()=>{
         axios.get('http://127.0.0.1:8000/api/entidades/seccion/banner')
         .then(response => {
@@ -15,13 +18,11 @@ const Main =()=>{
         });
     },
     [])
+    
 
     return(
         <div>
-        
-        <CCF/>
-        <ContenedorICM/>
-        
+          {elements.map((elements)=>(MiniParser(elements)))}    
         </div>
     )
 }
