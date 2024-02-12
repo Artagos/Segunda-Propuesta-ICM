@@ -26,8 +26,8 @@ console.log(showNavbar)
               <li><a href="Efemerides">Efemerides</a></li>
               <li><a href="Contactos">Contactos</a></li>
               <li><a href="Contactos">Contactos</a></li>
-              <li><a href="Contactos">Contactos</a></li>
-              <li><a href="Contactos">Contactos</a></li>
+              <li><a ></a></li>
+              
           </ul>
         </div>
       </div>

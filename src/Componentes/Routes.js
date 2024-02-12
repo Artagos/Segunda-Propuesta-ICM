@@ -2,6 +2,7 @@ import { Route,Routes, BrowserRouter} from "react-router-dom"
 import Main from "../Rutas/Main"
 import Revista from "../Rutas/Revista"
 import Efemerides from "../Rutas/Efemerides"
+import Eventos from "../Rutas/Eventos"
 const RoutesICM=()=>{
     return(<div>
     <BrowserRouter>
@@ -29,41 +30,7 @@ const RoutesICM=()=>{
     
 </div>
 } />
-        <Route  path={'Eventos'} element={<div class="image-container">
-    <div class="image-item">
-        <img src="https://www.mexicodesconocido.com.mx/wp-content/uploads/2021/06/cultura-de-mexico-depositphotos.jpg" alt="Image 1" class="image"></img>
-        <div class="image-text">
-            <div class="image-title">Title 1</div>
-            <div class="image-paragraph">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</div>
-        </div>
-    </div>
-
-    <div class="image-item">
-        <img src="https://pymstatic.com/86302/conversions/tipos-de-cultura-social.jpg" alt="Image 2" class="image"></img>
-        <div class="image-text">
-            <div class="image-title">Title 2</div>
-            <div class="image-paragraph">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</div>
-        </div>
-    </div>
-    <div class="image-item">
-        <img src="https://www.mexicodesconocido.com.mx/wp-content/uploads/2021/06/cultura-de-mexico-depositphotos.jpg" alt="Image 1" class="image"></img>
-        <div class="image-text">
-            <div class="image-title">Title 1</div>
-            <div class="image-paragraph">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</div>
-        </div>
-    </div>
-    <div class="image-item">
-        <img src="https://pymstatic.com/86302/conversions/tipos-de-cultura-social.jpg" alt="Image 2" class="image"></img>
-        <div class="image-text">
-            <div class="image-title">Title 2</div>
-            <div class="image-paragraph">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</div>
-        </div>
-    </div>
-
-
-
-</div>
-} />
+        <Route  path={'Eventos'} element={<Eventos/>}/>
             
       </Routes>
       </BrowserRouter>
