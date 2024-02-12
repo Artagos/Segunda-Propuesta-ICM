@@ -22,7 +22,7 @@ class BannerPrincipalForm(forms.ModelForm):
         # Validar si el tipo_contenedor es efemeride, acontecimiento o evento y verificar que se haya seleccionado el elemento correspondiente
         if tipo_contenedor == 'Efemeride':
             if not seleccionar_efemeride:
-                self.add_error('seleccionar_efemeride', 'No te hagas el gracioso que tu sabes que no esta bien compadre, escribe una efemeride aqui hazme el favor')
+                self.add_error('seleccionar_efemeride', 'Debe seleccionar una efemeride')
         elif tipo_contenedor == 'Acontecimiento':
             if not seleccionar_acontecimiento:
                 self.add_error('seleccionar_acontecimiento', 'Debe seleccionar un acontecimiento.')
