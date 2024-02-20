@@ -32,9 +32,9 @@
     
 }
 .img-side img{
-    width: 100%;
+    width: 90%;
     
-    padding: 50px;
+    padding: 40px;
 }
 .event-title {
     text-transform: uppercase;
@@ -83,9 +83,10 @@
         justify-content: center;
     }
     .img-side img{
-        width: 100%;
+        width: 95%;
         
-        padding: 10px;
+        padding: 20px;
+       
         
     }
     .img-side{
