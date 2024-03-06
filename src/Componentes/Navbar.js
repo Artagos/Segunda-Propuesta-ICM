@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import '../ComponentsCss/Navbar.css'
+import MenuIcon from './MenuIcon'
 
 const Navbar = () => {
   const [showNavbar, setShowNavbar] = useState(false)
@@ -16,7 +17,7 @@ console.log(showNavbar)
           LOGO
         </div>
         <div className="menu-icon" onClick={handleShowNavbar}>
-          ICONO
+          <MenuIcon/>
         </div>
         <div className={`nav-elements  ${showNavbar && 'active'}`}>
           <ul>
