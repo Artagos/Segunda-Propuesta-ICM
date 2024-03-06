@@ -1,9 +1,27 @@
+import json
 from django.shortcuts import render
 from datetime import datetime, timedelta
 from calendar import monthrange
 from django.http import JsonResponse
 from .models import Efemerides, Acontecimiento, Evento, Centros_y_Empresas, Directores, Historia_de_la_Institución, Multimedia, Premio_Nacional_de_Música
 from .models import BannerPrincipal, Seccion_Efemerides
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth import authenticate, login
+
+@csrf_exempt
+def custom_login(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        username = data.get('username')
+        password = data.get('password')
+        user = authenticate(username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return JsonResponse({'message': 'Login successful'}, status=200)
+        else:
+            return JsonResponse({'error': 'Invalid credentials'}, status=400)
+    return JsonResponse({'error': 'Only POST method is accepted'}, status=405)
+
 
 
 def get_banner_principal(request):

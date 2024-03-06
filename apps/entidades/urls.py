@@ -3,6 +3,8 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    path('login/', custom_login, name='custom_login'),
+
     path('seccion/banner', views.get_banner_principal, name='get_banner_principal'),
     path('logos', views.get_iconos, name='get_iconos'),
     path('seccion/seccion-efemerides', views.get_seccion_efemerides, name='get_seccion_efemerides'),
