@@ -13,7 +13,7 @@ def get_banner_principal(request):
 def get_seccion_efemerides(request):
     contenedores = Seccion_Efemerides.objects.all().order_by('numero_unico').values()
     return JsonResponse(list(contenedores), safe=False)
-    
+
 # Create your views here.
 def get_all_efem(request):
     efemerides = Efemerides.objects.all().order_by().values()
@@ -22,7 +22,7 @@ def get_all_efem(request):
 def get_efem_premio(request):
     efemerides = Efemerides.objects.get(premio_nacional_de_la_música is not None).values()
     return JsonResponse(list(efemerides), safe=False)
-   
+
 def get_efem_a_mostrar(request):
     efemerides = Efemerides.objects.get(mostrar_en_banner_principal = true).values()
     return JsonResponse(list(efemerides), safe=False)
@@ -51,7 +51,7 @@ def get_centros_y_directores(request):
 def get_premios(request):
     premios = Premio_Nacional_de_Música.objects.order_by('fecha').values()
     return JsonResponse(list(premios), safe=False)
-    
+
 def get_acontecimientos_semana(request):
     fecha = datetime.now()
     fecha_inicio = fecha - timedelta(days = fecha.weekday())
@@ -97,7 +97,7 @@ def get_directores_nombres(request):
     data = [
         {
             'nombre': director.nombre,
-           
+
         }
         for director in directores
     ]
