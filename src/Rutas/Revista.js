@@ -1,4 +1,5 @@
 import CCFST from "../Componentes/ContenedorConFondoST"
+import CCF from "../Componentes/ContenedorConFondo"
 import ContenedorICM from "../Componentes/ContenedoresICM"
 const Revista =()=>{
     return(<div>
@@ -6,6 +7,7 @@ const Revista =()=>{
         <ContenedorICM titulo={'HISTORIA'} encabezado={'lore ipsum amet'} 
         descripcion={'bbbbdfnsjnhbobbsdhfbabubuybsdhjhbbswd'} colorFondo={'orange'} 
         colorBoton={'white'} colorLboton={'black'} colorLetra={'white'} imagen={'https://cdn.pixabay.com/photo/2024/01/26/23/53/building-8534894_1280.jpg'}/>
+        <CCF fondo={"https://cdn.pixabay.com/photo/2024/01/26/23/53/building-8534894_1280.jpg"} titulo={"Candela"} descripcion={"tengo problemas en el gao"}/>
         </div>
     )
 }
