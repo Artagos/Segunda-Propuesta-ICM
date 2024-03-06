@@ -1,7 +1,7 @@
 import ContenedorICM from "../Componentes/ContenedoresICM";
 import CCF from "../Componentes/ContenedorConFondo";
 import CCFST from "../Componentes/ContenedorConFondoST";
-import "../../"
+
 
 
 
