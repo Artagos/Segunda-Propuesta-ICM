@@ -46,7 +46,7 @@ DJANGO_APPS = [
 
 PROJECT_APPS = [
     'apps.entidades',
-    
+
 ]
 
 THIRD_PARTY_APPS = [
@@ -115,8 +115,8 @@ DATABASES = {
         'NAME': 'icm',
         'USER': 'root',
         'PASSWORD': 'root',
-        'HOST': 'localhost',   
-        'PORT': '3306',        
+        'HOST': 'localhost',
+        'PORT': '3306',
     }
 }
 
@@ -194,5 +194,3 @@ if not DEBUG:
         "default": env.db("DATABASE_URL"),
     }
     DATABASES["default"]["ATOMIC_REQUESTS"] = True
-    
-    
