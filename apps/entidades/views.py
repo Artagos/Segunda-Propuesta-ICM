@@ -1,9 +1,32 @@
+import json
 from django.shortcuts import render
 from datetime import datetime, timedelta
 from calendar import monthrange
 from django.http import JsonResponse
 from .models import Efemerides, Acontecimiento, Evento, Centros_y_Empresas, Directores, Historia_de_la_Institución, Multimedia, Premio_Nacional_de_Música
 from .models import BannerPrincipal, Seccion_Efemerides
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth import authenticate, login
+
+@csrf_exempt
+def custom_login(request):
+    if request.method == 'POST':
+        data = json.loads(request.body.decode('utf-8'))
+        username = data.get('username')
+        password = data.get('password')
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            login(request, user)
+            # Retornamos una respuesta exitosa con el token CSRF actualizado.
+            return JsonResponse({
+                'detail': 'Login successful',
+                'csrftoken': get_token(request)
+            })
+        else:
+            return JsonResponse({'detail': 'Invalid credentials'}, status=401)
+    return JsonResponse({'detail': 'Only POST method is accepted'}, status=405)
+
 
 
 def get_banner_principal(request):
@@ -14,7 +37,18 @@ def get_seccion_efemerides(request):
     contenedores = Seccion_Efemerides.objects.all().order_by('numero_unico').values()
     return JsonResponse(list(contenedores), safe=False)
 
-# Create your views here.
+
+def get_iconos(request):
+    iconos_max_id = Icono.objects.values('seccion').annotate(max_id=Max('id'))
+
+    iconos_ids = [icono['max_id'] for icono in iconos_max_id]
+    iconos_seleccionados = Icono.objects.filter(id__in=iconos_ids)
+
+    iconos_data = [{'seccion': icono.seccion.nombre, 'icono': icono.nombre, 'ruta_icono': icono.ruta_icono} for icono in iconos_seleccionados]
+
+    return JsonResponse({'iconos': iconos_data})
+
+
 def get_all_efem(request):
     efemerides = Efemerides.objects.all().order_by().values()
     return JsonResponse(list(efemerides), safe=False)
