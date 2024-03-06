@@ -11,16 +11,21 @@ from django.contrib.auth import authenticate, login
 @csrf_exempt
 def custom_login(request):
     if request.method == 'POST':
-        data = json.loads(request.body)
+        data = json.loads(request.body.decode('utf-8'))
         username = data.get('username')
         password = data.get('password')
-        user = authenticate(username=username, password=password)
+        user = authenticate(request, username=username, password=password)
+
         if user is not None:
             login(request, user)
-            return JsonResponse({'message': 'Login successful'}, status=200)
+            # Retornamos una respuesta exitosa con el token CSRF actualizado.
+            return JsonResponse({
+                'detail': 'Login successful',
+                'csrftoken': get_token(request)
+            })
         else:
-            return JsonResponse({'error': 'Invalid credentials'}, status=400)
-    return JsonResponse({'error': 'Only POST method is accepted'}, status=405)
+            return JsonResponse({'detail': 'Invalid credentials'}, status=401)
+    return JsonResponse({'detail': 'Only POST method is accepted'}, status=405)
 
 
 
