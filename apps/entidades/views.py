@@ -14,7 +14,18 @@ def get_seccion_efemerides(request):
     contenedores = Seccion_Efemerides.objects.all().order_by('numero_unico').values()
     return JsonResponse(list(contenedores), safe=False)
 
-# Create your views here.
+
+def get_iconos(request):
+    iconos_max_id = Icono.objects.values('seccion').annotate(max_id=Max('id'))
+
+    iconos_ids = [icono['max_id'] for icono in iconos_max_id]
+    iconos_seleccionados = Icono.objects.filter(id__in=iconos_ids)
+
+    iconos_data = [{'seccion': icono.seccion.nombre, 'icono': icono.nombre, 'ruta_icono': icono.ruta_icono} for icono in iconos_seleccionados]
+
+    return JsonResponse({'iconos': iconos_data})
+
+
 def get_all_efem(request):
     efemerides = Efemerides.objects.all().order_by().values()
     return JsonResponse(list(efemerides), safe=False)

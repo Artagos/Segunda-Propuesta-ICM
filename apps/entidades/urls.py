@@ -4,6 +4,7 @@ from . import views
 
 urlpatterns = [
     path('seccion/banner', views.get_banner_principal, name='get_banner_principal'),
+    path('logos', views.get_iconos, name='get_iconos'),
     path('seccion/seccion-efemerides', views.get_seccion_efemerides, name='get_seccion_efemerides'),
     path('efemerides/', views.get_all_efem, name='efemerides'),
     path('efemerides/premio/', views.get_efem_premio, name='efemerides_premio'),
