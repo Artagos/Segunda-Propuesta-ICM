@@ -15,12 +15,17 @@ function Navbar({ seccion }) {
 
 
   React.useEffect(() => {
-    axios.get('http://127.0.0.1:8000/api/entidades/logos')
+    axios.get('http://127.0.0.1:8000/api/entidades/logos/')
       .then(response => {
         console.log(response.data)
-        console.log(seccion)
-        var icons = response.data
-        icons.map((icon) => { if (icon.seccion === seccion) setIconUrl('/' + icon.foto)()} )
+        var icons = response.data.iconos
+        icons.map((icon) =>{ 
+
+          if (icon.seccion === seccion){
+            setIconUrl('/' + icon.foto);
+          }
+          
+          })
 
       })
       .catch(error => {
