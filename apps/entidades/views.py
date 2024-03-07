@@ -5,7 +5,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from datetime import datetime, timedelta
 from calendar import monthrange
 from django.http import JsonResponse
-from .models import Efemerides, Acontecimiento, Evento, Centros_y_Empresas, Directores, Historia_de_la_Institución, Multimedia, Premio_Nacional_de_Música
+from .models import Efemerides, Acontecimiento, Evento, Centros_y_Empresas, Directores, Historia_de_la_Institución, Multimedia, Premio_Nacional_de_Música, Iconos
 from .models import BannerPrincipal, Seccion_Efemerides
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -22,27 +22,26 @@ def get_seccion_efemerides(request):
 
 
 def get_iconos(request):
-    try:
-        iconos_max_id = Iconos.objects.values('seccion').annotate(max_id=Max('id'))
 
-        iconos_ids = [icono['max_id'] for icono in iconos_max_id]
-
-        iconos_seleccionados = Iconos.objects.filter(id__in=iconos_ids)
+    iconos_max_id = Iconos.objects.values('seccion').annotate(max_id=Max('id'))
 
 
-        iconos_data = [
-            {
-                'seccion': icono.get_seccion_display(),
-                'foto': request.build_absolute_uri(icono.foto.url) if icono.foto else None
-            }
-            for icono in iconos_seleccionados
-        ]
-        return JsonResponse({'iconos': iconos_data})
+    iconos_ids = [icono['max_id'] for icono in iconos_max_id]
 
-    except ObjectDoesNotExist:
-        return JsonResponse({'error': 'No se encontraron iconos.'}, status=404)
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+    iconos_seleccionados = Iconos.objects.filter(id__in=iconos_ids)
+
+
+    iconos_data = [
+        {
+            'seccion': icono.get_seccion_display(),
+            'foto': request.build_absolute_uri(icono.foto.url) if icono.foto else None
+        }
+        for icono in iconos_seleccionados
+    ]
+
+    return JsonResponse({'iconos': iconos_data})
+
+
 
 def get_all_efem(request):
     efemerides = Efemerides.objects.all().order_by().values()

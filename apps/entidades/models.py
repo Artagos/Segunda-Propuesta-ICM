@@ -97,7 +97,7 @@ class Iconos (models.Model):
     ]
 
     seccion = models.CharField(max_length=50, choices=ICON_CHOICES)
-    foto = models.FileField(upload_to='logos/', max_length=100, null=True)
+    foto = models.FileField(upload_to='logos/', max_length=1000, null=True)
 
     def __str__(self):
         return self.seccion
