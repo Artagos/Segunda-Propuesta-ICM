@@ -5,7 +5,7 @@ import React from 'react'
 import axios from 'axios'
 
 function Navbar({ seccion }) {
-  const [showNavbar, setShowNavbar] = useState(false)
+  const [showNavbar, setShowNavbar] = React.useState(false)
   const [iconUrl, setIconUrl] = React.useState('')
 
   const handleShowNavbar = () => {
