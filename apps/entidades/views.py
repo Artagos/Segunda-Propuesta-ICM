@@ -5,28 +5,6 @@ from calendar import monthrange
 from django.http import JsonResponse
 from .models import Efemerides, Acontecimiento, Evento, Centros_y_Empresas, Directores, Historia_de_la_Institución, Multimedia, Premio_Nacional_de_Música
 from .models import BannerPrincipal, Seccion_Efemerides
-from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth import authenticate, login
-
-@csrf_exempt
-def custom_login(request):
-    if request.method == 'POST':
-        data = json.loads(request.body.decode('utf-8'))
-        username = data.get('username')
-        password = data.get('password')
-        user = authenticate(request, username=username, password=password)
-
-        if user is not None:
-            login(request, user)
-            # Retornamos una respuesta exitosa con el token CSRF actualizado.
-            return JsonResponse({
-                'detail': 'Login successful',
-                'csrftoken': get_token(request)
-            })
-        else:
-            return JsonResponse({'detail': 'Invalid credentials'}, status=401)
-    return JsonResponse({'detail': 'Only POST method is accepted'}, status=405)
-
 
 
 def get_banner_principal(request):
@@ -38,16 +16,26 @@ def get_seccion_efemerides(request):
     return JsonResponse(list(contenedores), safe=False)
 
 
+
 def get_iconos(request):
-    iconos_max_id = Icono.objects.values('seccion').annotate(max_id=Max('id'))
+
+    iconos_max_id = Iconos.objects.values('seccion').annotate(max_id=Max('id'))
+
 
     iconos_ids = [icono['max_id'] for icono in iconos_max_id]
-    iconos_seleccionados = Icono.objects.filter(id__in=iconos_ids)
 
-    iconos_data = [{'seccion': icono.seccion.nombre, 'icono': icono.nombre, 'ruta_icono': icono.ruta_icono} for icono in iconos_seleccionados]
+    iconos_seleccionados = Iconos.objects.filter(id__in=iconos_ids)
+
+
+    iconos_data = [
+        {
+            'seccion': icono.get_seccion_display(),
+            'foto': request.build_absolute_uri(icono.foto.url) if icono.foto else None
+        }
+        for icono in iconos_seleccionados
+    ]
 
     return JsonResponse({'iconos': iconos_data})
-
 
 def get_all_efem(request):
     efemerides = Efemerides.objects.all().order_by().values()
