@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { NavLink } from 'react-router-dom'
+
 import '../ComponentsCss/Navbar.css'
 import MenuIcon from './MenuIcon'
 import React from 'react'
@@ -19,13 +19,14 @@ const Navbar = ({seccion}) => {
     axios.get('http://127.0.0.1:8000/api/entidades/logos')
     .then(response => {
         console.log(response.data);
+        console.log(seccion)
         var icons=response.data;
         icons.map((icon)=>{if(icon.seccion===seccion)setIconUrl('/'+icon.foto)
         ()})
 
     })
     .catch(error => {
-      console.error('Error fetching (Banner Principal)', error);
+      console.error('Error fetching (Logos)', error);
     });
 },
 [])
@@ -46,7 +47,6 @@ const Navbar = ({seccion}) => {
               <li><a href="Revista">Revista</a></li>
               <li><a href="Eventos">Eventos</a></li>
               <li><a href="Efemerides">Efemerides</a></li>
-              <li><a href="Contactos">Contactos</a></li>
               <li><a href="Contactos">Contactos</a></li>
               <li><a ></a></li>
               
