@@ -15,7 +15,7 @@ const Navbar = ({seccion}) => {
   
   
 
-  React.useEffect(()=>{
+  /*React.useEffect(()=>{
     axios.get('http://127.0.0.1:8000/api/entidades/logos')
     .then(response => {
         console.log(response.data);
@@ -29,14 +29,14 @@ const Navbar = ({seccion}) => {
       console.error('Error fetching (Logos)', error);
     });
 },
-[])
+[])*/
 
 
   return (
     <nav className="navbar">
       <div className="container">
-        <div className="logo">
-          <img src={iconUrl}></img>
+        <div className="logo" style={{height:'inherit', marginBottom:'5px'}}>
+          <img style={{width:"100%", height:"inherit"}} src={"/logos/ICMLOGOBLANCO.png"}></img>
         </div>
         <div className="menu-icon" onClick={handleShowNavbar}>
           <MenuIcon/>
