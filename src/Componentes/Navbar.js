@@ -15,7 +15,7 @@ const Navbar = ({seccion}) => {
   
   
 
-  /*React.useEffect(()=>{
+  React.useEffect(()=>{
     axios.get('http://127.0.0.1:8000/api/entidades/logos')
     .then(response => {
         console.log(response.data);
@@ -29,7 +29,7 @@ const Navbar = ({seccion}) => {
       console.error('Error fetching (Logos)', error);
     });
 },
-[])*/
+[])
 
 
   return (
