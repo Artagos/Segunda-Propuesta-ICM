@@ -5,28 +5,6 @@ from calendar import monthrange
 from django.http import JsonResponse
 from .models import Efemerides, Acontecimiento, Evento, Centros_y_Empresas, Directores, Historia_de_la_Institución, Multimedia, Premio_Nacional_de_Música
 from .models import BannerPrincipal, Seccion_Efemerides
-from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth import authenticate, login
-
-@csrf_exempt
-def custom_login(request):
-    if request.method == 'POST':
-        data = json.loads(request.body.decode('utf-8'))
-        username = data.get('username')
-        password = data.get('password')
-        user = authenticate(request, username=username, password=password)
-
-        if user is not None:
-            login(request, user)
-            # Retornamos una respuesta exitosa con el token CSRF actualizado.
-            return JsonResponse({
-                'detail': 'Login successful',
-                'csrftoken': get_token(request)
-            })
-        else:
-            return JsonResponse({'detail': 'Invalid credentials'}, status=401)
-    return JsonResponse({'detail': 'Only POST method is accepted'}, status=405)
-
 
 
 def get_banner_principal(request):
