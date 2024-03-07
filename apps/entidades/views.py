@@ -16,16 +16,26 @@ def get_seccion_efemerides(request):
     return JsonResponse(list(contenedores), safe=False)
 
 
+
 def get_iconos(request):
-    iconos_max_id = Icono.objects.values('seccion').annotate(max_id=Max('id'))
+
+    iconos_max_id = Iconos.objects.values('seccion').annotate(max_id=Max('id'))
+
 
     iconos_ids = [icono['max_id'] for icono in iconos_max_id]
-    iconos_seleccionados = Icono.objects.filter(id__in=iconos_ids)
 
-    iconos_data = [{'seccion': icono.seccion.nombre, 'icono': icono.nombre, 'ruta_icono': icono.ruta_icono} for icono in iconos_seleccionados]
+    iconos_seleccionados = Iconos.objects.filter(id__in=iconos_ids)
+
+
+    iconos_data = [
+        {
+            'seccion': icono.get_seccion_display(),
+            'foto': request.build_absolute_uri(icono.foto.url) if icono.foto else None
+        }
+        for icono in iconos_seleccionados
+    ]
 
     return JsonResponse({'iconos': iconos_data})
-
 
 def get_all_efem(request):
     efemerides = Efemerides.objects.all().order_by().values()
