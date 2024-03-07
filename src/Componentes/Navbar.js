@@ -3,6 +3,7 @@ import { NavLink } from 'react-router-dom'
 import '../ComponentsCss/Navbar.css'
 import MenuIcon from './MenuIcon'
 import React from 'react'
+import axios from 'axios'
 
 const Navbar = ({seccion}) => {
   const [showNavbar, setShowNavbar] = useState(false);

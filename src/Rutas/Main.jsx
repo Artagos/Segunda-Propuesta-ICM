@@ -21,7 +21,7 @@ const Main =()=>{
 
     return(
       <div>
-        <Navbar seccion={"Main"}/>
+        <Navbar seccion={"S_BannerPpal"}/>
         <div>
             {elements.map((elements)=>(MiniParser(elements)))}    
           </div>
