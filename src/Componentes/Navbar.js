@@ -35,7 +35,7 @@ const Navbar = ({seccion}) => {
   return (
     <nav className="navbar">
       <div className="container">
-        <div className="logo" style={{height:'inherit', marginBottom:'5px'}}>
+        <div className="logo" style={{height:'inherit', margin:'20px'}}>
           <img style={{width:"100%", height:"inherit"}} src={"/logos/ICMLOGOBLANCO.png"}></img>
         </div>
         <div className="menu-icon" onClick={handleShowNavbar}>
