@@ -20,8 +20,9 @@ colorBoton,colorLboton,colorTitulo})=>{
             </div>
             <a href="#" class="buttonC"style={{colorFondo:colorBoton, backgroundColor:colorLboton}}>más</a>
         </div>
-        <div class="img-side"><img src={imagen} alt="rhcp"></img></div></div>  :  
-        
+        <div class="img-side"><img src={imagen} alt="rhcp"></img></div></div>  
+
+        :  
         
         <div class="event-container" style={{backgroundColor: colorFondo, color:colorLetra}}><div class="img-side"><img src={imagen} alt="rhcp"></img></div><div class="inf-side">
             <div class="aux-inf-side">
