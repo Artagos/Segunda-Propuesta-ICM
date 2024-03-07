@@ -1,6 +1,7 @@
 import React from "react"
 import axios from 'axios';
 import { MiniParser } from "./MiniParser";
+import Navbar from "../Componentes/Navbar";
 const Main =()=>{
     const [elements,setElements]=React.useState([]);
     
@@ -19,10 +20,13 @@ const Main =()=>{
     
 
     return(
+      <div>
+        <Navbar seccion={"Main"}/>
         <div>
-          {elements.map((elements)=>(MiniParser(elements)))}    
-        </div>
+            {elements.map((elements)=>(MiniParser(elements)))}    
+          </div>
+      </div>
     )
-}
+  }
 
 export default Main

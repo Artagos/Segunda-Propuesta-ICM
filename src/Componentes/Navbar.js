@@ -2,19 +2,39 @@ import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import '../ComponentsCss/Navbar.css'
 import MenuIcon from './MenuIcon'
+import React from 'react'
 
-const Navbar = () => {
-  const [showNavbar, setShowNavbar] = useState(false)
-console.log(showNavbar)
+const Navbar = ({seccion}) => {
+  const [showNavbar, setShowNavbar] = useState(false);
+  const[iconUrl,setIconUrl]=React.useState('');
+  
   const handleShowNavbar = () => {
     setShowNavbar(!showNavbar)
-  }
+  };
+  
+  
+
+  React.useEffect(()=>{
+    axios.get('http://127.0.0.1:8000/api/entidades/logos')
+    .then(response => {
+        console.log(response.data);
+        var icons=response.data;
+        icons.map((icon)=>{if(icon.seccion===seccion)setIconUrl('/'+icon.foto)
+        ()})
+
+    })
+    .catch(error => {
+      console.error('Error fetching (Banner Principal)', error);
+    });
+},
+[])
+
 
   return (
     <nav className="navbar">
       <div className="container">
         <div className="logo">
-          LOGO
+          <img src={iconUrl}></img>
         </div>
         <div className="menu-icon" onClick={handleShowNavbar}>
           <MenuIcon/>
