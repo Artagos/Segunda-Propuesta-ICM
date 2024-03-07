@@ -1,7 +1,7 @@
 import '../ComponentsCss/ContenedoresICM.css';
 import { useViewport } from '../useViewport';
 const ContenedorICM=({colorFondo,titulo,encabezado,descripcion,imagen,colorLetra,
-colorBoton,colorLboton})=>{
+colorBoton,colorLboton,colorTitulo})=>{
 
 
     const {width,height}=useViewport();
@@ -12,7 +12,7 @@ colorBoton,colorLboton})=>{
     <div>
         {!breakWidth?<div class="event-container" style={{backgroundColor: colorFondo, color:colorLetra}}><div class="inf-side">
             <div class="aux-inf-side">
-                <div class="event-title">{titulo}</div>
+                <div class="event-title" style={{color:colorTitulo}}>{titulo}</div>
                 <div class="event-details">
                     <h4 >{encabezado}</h4>
                     <p>{descripcion}</p>
@@ -25,8 +25,8 @@ colorBoton,colorLboton})=>{
         
         <div class="event-container" style={{backgroundColor: colorFondo, color:colorLetra}}><div class="img-side"><img src={imagen} alt="rhcp"></img></div><div class="inf-side">
             <div class="aux-inf-side">
-            <div class="event-title">{titulo}</div>
-                <div class="event-details">
+            <div class="event-title"style={{color:colorTitulo}}>{titulo}</div>
+                <div class="event-details" style={{color:colorLetra}}>
                     <h4 >{encabezado}</h4>
                     <p>{descripcion}</p>
                     </div>
