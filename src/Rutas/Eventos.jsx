@@ -1,7 +1,10 @@
 import ContenedorEventos from "../Componentes/ContenedorEventos";
+import Navbar from "../Componentes/Navbar";
 const Eventos=()=>{
-    return(
+    return(<div>
+        <Navbar/>
         <ContenedorEventos/>
+    </div>
     )
 }
 

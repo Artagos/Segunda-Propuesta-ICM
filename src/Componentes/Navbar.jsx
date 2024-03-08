@@ -38,7 +38,7 @@ function Navbar({ seccion }) {
     <nav className="navbar">
       <div className="container">
         <div className="logo" style={{ height: 'inherit', margin: '20px' }}>
-          <img style={{ width: "100%", height: "inherit" }} src={"/"+iconUrl}></img>
+          <img style={{ width: "100%", height: "inherit" }} src={"/logos/ICMLOGOBLANCO.png"}></img>
         </div>
         <div className="menu-icon" onClick={handleShowNavbar}>
           <MenuIcon />

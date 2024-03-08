@@ -3,6 +3,7 @@ import Main from "../Rutas/Main"
 import Revista from "../Rutas/Revista"
 import Efemerides from "../Rutas/Efemerides"
 import Eventos from "../Rutas/Eventos"
+import Navbar from "./Navbar"
 const RoutesICM=()=>{
     return(<div>
     <BrowserRouter>
@@ -14,7 +15,11 @@ const RoutesICM=()=>{
         <Route  path={'Novedades'} element={''} />
         <Route  path={'Multimedios'} element={''} />
         <Route  path={'Revista'} element={<Revista/>} />
-        <Route  path={'Contactos'} element={<div class="contact-section">
+        <Route  path={'Contactos'} element={
+<div>
+    <Navbar/>
+        <div class="contact-section">
+            
     <div class="contact-info">
         <p><span class="leader">CEO:</span> John Doe</p>
         <p><span class="leader">Email:</span> john.doe@example.com</p>
@@ -28,6 +33,7 @@ const RoutesICM=()=>{
     </div>
 
     
+    </div>
 </div>
 } />
         <Route  path={'Eventos'} element={<Eventos/>}/>
