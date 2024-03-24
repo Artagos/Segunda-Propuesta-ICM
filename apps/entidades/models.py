@@ -2,6 +2,44 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+import fitz  # Importa PyMuPDF
+from django.core.files.base import ContentFile
+
+class Revista(models.Model):
+
+    titulo = models.CharField(max_length=200)
+    descripcion = models.TextField()
+    pdf = models.FileField(upload_to='pdfs/')
+    imagen_portada = models.ImageField(upload_to='images/')
+
+    def __str__(self):
+        return self.titulo
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        if not self.imagen_portada:
+            pdf_documento = fitz.open(self.pdf.path)
+            pagina = pdf_documento[0]
+            pix = pagina.get_pixmap()
+            imagen_bytes = pix.tobytes("png")
+            self.imagen_portada.save(f"portada_{self.pk}.png", ContentFile(imagen_bytes), save=False)
+            pdf_documento.close()
+            super().save(*args, **kwargs)
+
+
+class Podcast(models.Model):
+    titulo = models.CharField(max_length=200)
+    descripcion = models.TextField()
+    link_podcast = models.URLField(max_length=1024)  # Puede contener tanto URLs locales como externas
+    foto = models.ImageField(upload_to='images/')
+
+    def __str__(self):
+        return self.titulo
+
+    def es_link_local(self):
+        # Esto verificará si el link del podcast es relativo (local) o absoluto (externo)
+        return not (self.link_podcast.startswith('http://') or self.link_podcast.startswith('https://'))
 
 class ContenedorConFondo (models.Model):
     titulo = models.CharField(max_length=50)

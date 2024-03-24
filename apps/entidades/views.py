@@ -5,10 +5,37 @@ from django.core.exceptions import ObjectDoesNotExist
 from datetime import datetime, timedelta
 from calendar import monthrange
 from django.http import JsonResponse
-from .models import Efemerides, Acontecimiento, Evento, Centros_y_Empresas, Directores, Historia_de_la_Institución, Multimedia, Premio_Nacional_de_Música, Iconos
-from .models import BannerPrincipal, Seccion_Efemerides
+from .models import Efemerides, Acontecimiento, Evento, Centros_y_Empresas, Directores, Historia_de_la_Institución, Multimedia, Premio_Nacional_de_Música, Iconos, Revista, BannerPrincipal, Seccion_Efemerides, Podcast
 from django.core.exceptions import ObjectDoesNotExist
+from django.shortcuts import get_object_or_404
 
+def lista_revistas(request):
+    revistas = Revista.objects.all().values('id', 'titulo', 'descripcion', 'pdf', 'imagen_portada')
+    return JsonResponse(list(revistas), safe=False)
+
+def detalle_revista(request, id):
+    revista = get_object_or_404(Revista, pk=id)
+    data = {
+        'titulo': revista.titulo,
+        'descripcion': revista.descripcion,
+        'pdf_url': revista.pdf.url,
+        'imagen_portada_url': revista.imagen_portada.url,
+    }
+    return JsonResponse(data)
+
+def lista_podcasts(request):
+    podcasts = Podcast.objects.all().values('id', 'titulo', 'descripcion', 'link_podcast', 'foto')
+    podcasts_data = []
+    for podcast in podcasts:
+        podcast_data = {
+            'titulo': podcast['titulo'],
+            'descripcion': podcast['descripcion'],
+            'link_podcast': podcast['link_podcast'],
+            'foto_url': request.build_absolute_uri(podcast['foto']),  # Construye la URL completa para la foto
+            'es_link_local': Podcast.objects.get(pk=podcast['id']).es_link_local(),
+        }
+        podcasts_data.append(podcast_data)
+    return JsonResponse(podcasts_data, safe=False)
 
 def get_banner_principal(request):
     contenedores = BannerPrincipal.objects.all().order_by('numero_unico').values()

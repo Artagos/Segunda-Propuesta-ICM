@@ -1,7 +1,20 @@
 from django.contrib import admin
 from .models import Efemerides, Acontecimiento, Evento, Centros_y_Empresas, Directores, Historia_de_la_Institución, Multimedia, Premio_Nacional_de_Música
-from .models import BannerPrincipal, Seccion_Efemerides, ContenedorConFondo, ContenedorConFondoSoloTitulo, ContenedorICM, Iconos
+from .models import BannerPrincipal, Seccion_Efemerides, ContenedorConFondo, ContenedorConFondoSoloTitulo, ContenedorICM, Iconos, Revista, Podcast
 from django import forms
+
+
+@admin.register(Revista)
+class RevistaAdmin(admin.ModelAdmin):
+    list_display = ('titulo', 'descripcion')
+    search_fields = ('titulo', 'descripcion')
+    list_filter = ('titulo',)
+
+@admin.register(Podcast)
+class PodcastAdmin(admin.ModelAdmin):
+    list_display = ('titulo', 'descripcion', 'link_podcast')
+    search_fields = ('titulo', 'descripcion')
+    list_filter = ('titulo',)
 
 class BannerPrincipalForm(forms.ModelForm):
 
