@@ -5,6 +5,7 @@ from . import views
 urlpatterns = [
     path('revista/all', views.lista_revistas, name='lista_revistas'),
     path('revista/detail', views.detalle_revista, name='detalle_revista'),
+    path('podcast', views.lista_podcasts, name='lista_podcasts'),
     path('seccion/banner', views.get_banner_principal, name='get_banner_principal'),
     path('logos', views.get_iconos, name='get_iconos'),
     path('seccion/seccion-efemerides', views.get_seccion_efemerides, name='get_seccion_efemerides'),
