@@ -1,0 +1,44 @@
+.image-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    padding: 20px;
+    box-sizing: border-box;
+    background-color: #ed8500;
+}
+
+.image-item {
+    flex-basis: calc(33.333% - 20px); /* Adjust for the desired number of images in a row and spacing */
+    margin-bottom: 20px;
+}
+
+.image {
+    width: 100%;
+    height: fit-content;
+    
+    overflow: hidden;
+}
+
+.image-text {
+    text-align: center;
+    margin-top: 10px;
+}
+
+.image-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #ffffff;
+}
+
+.image-paragraph {
+    font-size: 14px;
+    color: #f3f3f3;
+}
+
+@media (max-width: 900px) {
+    /* Adjust styles for smaller screens if necessary */
+    .image-item {
+        flex-basis: calc(50% - 20px);
+    }
+}
