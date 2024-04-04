@@ -63,13 +63,36 @@ CKEDITOR_CONFIGS = {
     'default': {
         'toolbar': 'Custom',
         'toolbar_Custom': [
+            ['Font', 'FontSize'],
+            ['TextColor', 'BGColor'],
             ['Bold', 'Italic', 'Underline'],
             ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'],
             ['Link', 'Unlink'],
             ['RemoveFormat', 'Source']
         ],
+        'font_names': 'Bw Darius DEMO Bold;Bw Darius DEMO Regular;Montserrat Medium;Montserrat Regular;Montserrat Italic',
+        'colorButton_colors': '000000,ffffff,4f4f4f,29385c,36454d,0d032b,ed8500',
         'autoParagraph': False
-    }
+
+
+    },
+    'small': {
+        'toolbar': 'full',
+        'toolbar_full': [
+            ['Font', 'FontSize'],
+            ['TextColor', 'BGColor'],
+            ['Bold', 'Italic', 'Underline'],
+            ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'],
+            ['Link', 'Unlink'],
+            ['RemoveFormat', 'Source']
+        ],
+        'font_names': 'Bw Darius DEMO Bold;Bw Darius DEMO Regular;Montserrat Medium;Montserrat Regular;Montserrat Italic',
+        'colorButton_colors': '000000,ffffff,4f4f4f,29385c,36454d,0d032b,ed8500',
+        'autoParagraph': False,
+
+        'height': 50,
+
+    },
 }
 CKEDITOR_UPLOAD_PATH = "/media/"
 

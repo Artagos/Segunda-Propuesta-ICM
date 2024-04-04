@@ -1,20 +1,40 @@
 from django.contrib import admin
 from .models import Efemerides, Acontecimiento, Evento, Centros_y_Empresas, Directores, Historia_de_la_Institución, Multimedia, Premio_Nacional_de_Música
-from .models import BannerPrincipal, Seccion_Efemerides, ContenedorConFondo, ContenedorConFondoSoloTitulo, ContenedorICM, Iconos, Revista, Podcast
+from .models import BannerPrincipal, Seccion_Efemerides, Iconos, Revista, Podcast #ContenedorConFondo, ContenedorConFondoSoloTitulo, ContenedorICM,
 from django import forms
+from django.utils.html import strip_tags
+
 
 
 @admin.register(Revista)
 class RevistaAdmin(admin.ModelAdmin):
-    list_display = ('titulo', 'descripcion')
+    list_display = ('get_titulo_plain', 'get_desc_plain')
     search_fields = ('titulo', 'descripcion')
     list_filter = ('titulo',)
 
+    def get_titulo_plain(self, obj):
+        return strip_tags(obj.titulo)
+    get_titulo_plain.short_description = 'titulo'
+
+    def get_desc_plain(self, obj):
+        return strip_tags(obj.descripcion)
+    get_desc_plain.short_description = 'descripcion'
+
+
+
 @admin.register(Podcast)
 class PodcastAdmin(admin.ModelAdmin):
-    list_display = ('titulo', 'descripcion', 'link_podcast')
+    list_display = ('get_titulo_plain', 'get_desc_plain', 'link_podcast')
     search_fields = ('titulo', 'descripcion')
     list_filter = ('titulo',)
+
+    def get_titulo_plain(self, obj):
+        return strip_tags(obj.titulo)
+    get_titulo_plain.short_description = 'titulo'
+
+    def get_desc_plain(self, obj):
+        return strip_tags(obj.descripcion)
+    get_desc_plain.short_description = 'descripcion'
 
 class BannerPrincipalForm(forms.ModelForm):
 
@@ -73,13 +93,13 @@ class BannerPrincipalAdmin(admin.ModelAdmin):
         form.base_fields['enlace'].required = False
         form.base_fields['foto'].required = False
         form.base_fields['color_de_fondo'].required = False
-        form.base_fields['color_de_letra'].required = False
-        form.base_fields['color_boton'].required = False
-        form.base_fields['color_letra_boton'].required = False
-        form.base_fields['tipografia_titulo'].required = False
-        form.base_fields['tipografia_encabezado'].required = False
-        form.base_fields['tipografia_descripcion'].required = False
-        form.base_fields['tipografia_enlace'].required = False
+        # form.base_fields['color_de_letra'].required = False
+        # form.base_fields['color_boton'].required = False
+        # form.base_fields['color_letra_boton'].required = False
+        # form.base_fields['tipografia_titulo'].required = False
+        # form.base_fields['tipografia_encabezado'].required = False
+        # form.base_fields['tipografia_descripcion'].required = False
+        # form.base_fields['tipografia_enlace'].required = False
         return form
 
     pass
@@ -106,6 +126,8 @@ class SeccionEfemerideAdmin(admin.ModelAdmin):
 
     form = SeccionEfemerideForm
     pass
+
+
 
 admin.site.register(BannerPrincipal, BannerPrincipalAdmin)
 admin.site.register(Iconos)
