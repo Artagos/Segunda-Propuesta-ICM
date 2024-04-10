@@ -2,7 +2,6 @@
 import http from "./axiosAux"
 import RevistaComponent from "../Componentes/RevistaComponent"
 import Navbar from "../Componentes/Navbar"
-import http from "./axiosAux"
 const Revista =()=>{
     const [elements,setElements]=React.useState([]);
     React.useEffect(()=>{
