@@ -7,7 +7,7 @@ const Eventos=()=>{
     React.useEffect(()=>{
         http.get('eventos/mes/')
         .then(response => {
-          //console.log(response.data);
+          console.log(response.data);
           setEventos(response.data);
         })
         .catch(error => {

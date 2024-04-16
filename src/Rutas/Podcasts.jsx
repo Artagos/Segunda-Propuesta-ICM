@@ -11,7 +11,7 @@ const Podcasts = () => {
     React.useEffect(()=>{
     http.get('podcast')
     .then(response => {
-      //console.log(response.data);
+      console.log(response.data);
       setElements(response.data);
     })
     .catch(error => {
