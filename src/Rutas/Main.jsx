@@ -9,7 +9,7 @@ const Main =()=>{
     React.useEffect(()=>{
         http.get('entidades/seccion/banner')
         .then(response => {
-          //console.log(response.data);
+          console.log(response.data);
           setElements(response.data);
         })
         .catch(error => {

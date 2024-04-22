@@ -8,7 +8,7 @@ const Revista =()=>{
     React.useEffect(()=>{
         http.get('revista/all')
         .then(response => {
-          //console.log(response.data);
+          console.log(response.data);
           setElements(response.data);
         })
         .catch(error => {
