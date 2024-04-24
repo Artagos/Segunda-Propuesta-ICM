@@ -24,6 +24,13 @@ export function MiniParser(data){
             colorBoton={data.color_boton} colorLBoton={data.color_letra_boton}/>
         )
     }
+    else if(data.tipo_contenedor==="Efemerides"){
+        return(
+            <ContenedorICM titulo={data.titulo} encabezado={data.encabezado} descripcion={data.descripcion} 
+            imagen={'/'+data.foto} colorFondo={data.color_de_fondo} colorLetra={data.color_de_letra} 
+            colorBoton={data.color_boton} colorLBoton={data.color_letra_boton}/>
+        )
+    }
 
     
     return(null)

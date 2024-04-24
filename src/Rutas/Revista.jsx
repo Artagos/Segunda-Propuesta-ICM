@@ -17,6 +17,7 @@ const Revista =()=>{
     },
     [])
     return(
+    
     <div>
         <Navbar seccion={"S_Revista"}/>
         <div className="stack">
@@ -26,7 +27,8 @@ const Revista =()=>{
         
         </div>
     </div>
-    )
+    
+)
 }
 export default Revista
 
