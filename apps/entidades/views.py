@@ -83,6 +83,7 @@ def get_banner_principal(request):
             contenedor_dict['foto'] = acontecimiento.get_foto_url()
             contenedor_dict['color_de_fondo'] = acontecimiento.color_de_fondo
             contenedor_dict['encabezado'] = acontecimiento.encabezado
+            contenedor_dict['enlace'] = evento.enlace
 
         elif contenedor.seleccionar_evento is not None:
             evento = Evento.objects.get(id=contenedor.seleccionar_evento)
@@ -91,6 +92,8 @@ def get_banner_principal(request):
             contenedor_dict['foto'] = evento.get_foto_url()
             contenedor_dict['color_de_fondo'] = evento.color_de_fondo
             contenedor_dict['encabezado'] = evento.encabezado
+            contenedor_dict['enlace'] = evento.enlace
+            contenedor_dict['hora'] = evento.hora
 
         contenedores_list.append(contenedor_dict)
 
