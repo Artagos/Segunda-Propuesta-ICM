@@ -30,11 +30,11 @@ colorBoton,colorLboton,colorTitulo})=>{
             </div> 
 
             :  
-            
-            <div class="event-container" style={{ color:colorLetra}}>{imagen?<div class="img-side"><img src={imagen} alt="rhcp"></img></div>:null}
-                <div class="inf-side" >
-                    <div class="aux-inf-side">
-                    <div class="event-title"style={{color:colorTitulo}}>{tituloJsx}</div>
+
+            <div  class="event-container" style={{ color:colorLetra}}>{imagen?<div class="img-side"><img src={imagen} alt="rhcp"></img></div>:null}
+                <div  class="inf-side" >
+                    <div  class="aux-inf-side">
+                    <div  class="event-title"style={{color:colorTitulo}}>{tituloJsx}</div>
                         <div class="event-details" style={{color:colorLetra}}>
                             <h2 style={{fontSize:'15px'}}>{encabezadoJsx}</h2>
                             <p>{descripcionJsx}</p>
