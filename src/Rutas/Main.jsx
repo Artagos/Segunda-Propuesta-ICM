@@ -2,12 +2,13 @@ import React from "react"
 import http from "./axiosAux";
 import { MiniParser } from "./MiniParser";
 import Navbar from "../Componentes/Navbar";
+
 const Main =()=>{
     const [elements,setElements]=React.useState([]);
     
     //Fetching data 
     React.useEffect(()=>{
-        http.get('entidades/seccion/banner')
+        http.get('entidades/banner_principal/')
         .then(response => {
           console.log(response.data);
           setElements(response.data);

@@ -9,7 +9,7 @@ const Podcasts = () => {
     const [elements,setElements]=React.useState([]);
     
     React.useEffect(()=>{
-    http.get('podcast')
+    http.get('entidades/podcasts/')
     .then(response => {
       console.log(response.data);
       setElements(response.data);

@@ -5,7 +5,7 @@ import http from "./axiosAux";
 const Eventos=()=>{
     const [eventos,setEventos]=React.useState([]);
     React.useEffect(()=>{
-        http.get('eventos/mes/')
+        http.get('entidades/eventos_semana/')
         .then(response => {
           console.log(response.data);
           setEventos(response.data);
