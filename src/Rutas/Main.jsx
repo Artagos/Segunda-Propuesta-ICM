@@ -2,7 +2,7 @@ import React from "react"
 import http from "./axiosAux";
 import { MiniParser } from "./MiniParser";
 import Navbar from "../Componentes/Navbar";
-
+import ContenedorICM from "../Componentes/ContenedoresICM";
 const Main =()=>{
     const [elements,setElements]=React.useState([]);
     
@@ -25,6 +25,7 @@ const Main =()=>{
         {/* Header  */}
         <Navbar seccion={"S_BannerPpal"}/>
         {/* Contenedores */}
+        <ContenedorICM titulo={"wenoweno"} encabezado={"casasdasdawd"} descripcion={"lorem ipsum ametix candelix"} colorFondo={"black"} maxLength={10} imagen={"sadas"} />
           {elements.map((element)=>(MiniParser(element)))}
       </div>
     )

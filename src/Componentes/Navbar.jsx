@@ -49,7 +49,8 @@ function Navbar({ seccion }) {
             <li><a href="/">Principal</a></li>
             <li><a href="Revista">Revista</a></li>
             <li><a href="Eventos">Eventos</a></li>
-            {/* <li><a href="Efemerides">Efemerides</a></li> */}
+            <li><a href="Premios">Premios</a></li>
+            <li><a href="Efemerides">Efemerides</a></li> 
             <li><a href="Podcasts">Podcasts</a></li>
             <li><a href="Contactos">Contactos</a></li>
             <li><a></a></li>
