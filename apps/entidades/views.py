@@ -54,21 +54,46 @@ def get_banner_principal(request):
     contenedores_list = []
 
     for contenedor in contenedores:
-        contenedores_list.append({
+        contenedor_dict = {
             'id': contenedor.id,
             'tipo_contenedor': contenedor.tipo_contenedor,
-            'seleccionar_efemeride':contenedor.seleccionar_efemeride,
-            'seleccionar_acontecimiento':contenedor.seleccionar_acontecimiento,
-            'seleccionar_evento':contenedor.seleccionar_evento,
+            'seleccionar_efemeride': contenedor.seleccionar_efemeride,
+            'seleccionar_acontecimiento': contenedor.seleccionar_acontecimiento,
+            'seleccionar_evento': contenedor.seleccionar_evento,
             'titulo': contenedor.titulo,
             'descripcion': contenedor.descripcion,
             'foto': contenedor.get_foto_url(),
-            'color_de_fondo':contenedor.color_de_fondo,
-            'numero_unico':contenedor.numero_unico,
-            'encabezado':contenedor.encabezado,
+            'color_de_fondo': contenedor.color_de_fondo,
+            'numero_unico': contenedor.numero_unico,
+            'encabezado': contenedor.encabezado,
+        }
 
-            # Agrega aquí cualquier otro campo que quieras incluir en la respuesta
-        })
+        if contenedor.seleccionar_efemeride is not None:
+            efemeride = Efemerides.objects.get(id=contenedor.seleccionar_efemeride)
+            contenedor_dict['titulo'] = efemeride.titulo
+            contenedor_dict['descripcion'] = efemeride.descripcion
+            contenedor_dict['foto'] = efemeride.get_foto_url()
+            contenedor_dict['color_de_fondo'] = efemeride.color_de_fondo
+            contenedor_dict['encabezado'] = efemeride.encabezado
+
+        elif contenedor.seleccionar_acontecimiento is not None:
+            acontecimiento = Acontecimiento.objects.get(id=contenedor.seleccionar_acontecimiento)
+            contenedor_dict['titulo'] = acontecimiento.titulo
+            contenedor_dict['descripcion'] = acontecimiento.descripcion
+            contenedor_dict['foto'] = acontecimiento.get_foto_url()
+            contenedor_dict['color_de_fondo'] = acontecimiento.color_de_fondo
+            contenedor_dict['encabezado'] = acontecimiento.encabezado
+
+        elif contenedor.seleccionar_evento is not None:
+            evento = Evento.objects.get(id=contenedor.seleccionar_evento)
+            contenedor_dict['titulo'] = evento.titulo
+            contenedor_dict['descripcion'] = evento.descripcion
+            contenedor_dict['foto'] = evento.get_foto_url()
+            contenedor_dict['color_de_fondo'] = evento.color_de_fondo
+            contenedor_dict['encabezado'] = evento.encabezado
+
+        contenedores_list.append(contenedor_dict)
+
 
     return JsonResponse(contenedores_list, safe=False)
 
