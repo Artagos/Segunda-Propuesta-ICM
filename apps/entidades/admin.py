@@ -56,19 +56,19 @@ class BannerPrincipalForm(forms.ModelForm):
         if tipo_contenedor == 'Efemeride':
             if not seleccionar_efemeride:
                 self.add_error('seleccionar_efemeride', 'Debe seleccionar una efemeride')
-            if not color_de_fondo:
-                self.add_error('color_de_fondo', 'Debe seleccionar un color de fondo')
+            # if not color_de_fondo:
+            #     self.add_error('color_de_fondo', 'Debe seleccionar un color de fondo')
 
         elif tipo_contenedor == 'Acontecimiento':
             if not seleccionar_acontecimiento:
                 self.add_error('seleccionar_acontecimiento', 'Debe seleccionar un acontecimiento.')
-            if not color_de_fondo:
-                self.add_error('color_de_fondo', 'Debe seleccionar un color de fondo')
+            # if not color_de_fondo:
+            #     self.add_error('color_de_fondo', 'Debe seleccionar un color de fondo')
         elif tipo_contenedor == 'Evento':
             if not seleccionar_evento:
                 self.add_error('seleccionar_evento', 'Debe seleccionar un evento.')
-            if not color_de_fondo:
-                self.add_error('color_de_fondo', 'Debe seleccionar un color de fondo')
+            # if not color_de_fondo:
+            #     self.add_error('color_de_fondo', 'Debe seleccionar un color de fondo')
 
 
         if numero_unico is not None:
