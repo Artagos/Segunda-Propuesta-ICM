@@ -8,13 +8,23 @@ from ckeditor.fields import RichTextField
 
 class Revista(models.Model):
 
-    titulo = RichTextField(config_name = 'small', blank=True, null=True)
-    descripcion = RichTextField(blank=True, null=True)
-    pdf = models.FileField(upload_to='pdfs/')
+    titulo = RichTextField(config_name = 'small', blank=False, null=False)
+    descripcion = RichTextField(blank=False, null=False)
+    pdf = models.FileField(upload_to='pdfs/',blank=False, null=False)
     imagen_portada = models.ImageField(upload_to='images/')
 
-    # def __str__(self):
-    #     return self.titulo
+    def get_foto_url(self):
+        if self.foto and hasattr(self.imagen_portada, 'url'):
+            return 'https://back.dcubamusica.cult.cu/public/' + self.foto.url
+        return None
+
+    def get_pdf_url(self):
+        if self.foto and hasattr(self.imagen_portada, 'url'):
+            return 'https://back.dcubamusica.cult.cu/public/' + self.pdf.url
+        return None
+
+    def __str__(self):
+        return str(self.titulo)
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
@@ -30,17 +40,19 @@ class Revista(models.Model):
 
 
 class Podcast(models.Model):
-    titulo = RichTextField(config_name = 'small', blank=True, null=True)
-    descripcion = RichTextField(blank=True, null=True)
-    link_podcast = models.URLField(max_length=1024)  # Puede contener tanto URLs locales como externas
+    titulo = RichTextField(config_name = 'small', blank=False, null=False)
+    descripcion = RichTextField(blank=False, null=False)
+    link_podcast = models.URLField(blank=False, null=False)  # Puede contener tanto URLs locales como externas
     foto = models.ImageField(upload_to='images/', null=True)
 
-    # def __str__(self):
-    #     return self.titulo
+    def get_foto_url(self):
+        if self.foto and hasattr(self.foto, 'url'):
+            return 'https://back.dcubamusica.cult.cu/public/' + self.foto.url
+        return None
 
-    def es_link_local(self):
-        # Esto verificará si el link del podcast es relativo (local) o absoluto (externo)
-        return not (self.link_podcast.startswith('http://') or self.link_podcast.startswith('https://'))
+    def __str__(self):
+        return str(self.titulo)
+
 
 # class ContenedorConFondo (models.Model):
 #     titulo = models.CharField(max_length=50)
@@ -62,26 +74,21 @@ class Podcast(models.Model):
 #     color_boton = models.CharField(max_length=7)
 #     color_letra_boton = models.CharField(max_length=7)
 
-class ContenedorEfemeride (models.Model):
-    color_de_fondo = models.CharField(max_length=7)
-
 
 class BannerPrincipal(models.Model):
     class Meta:
         verbose_name_plural = "Banner Principal"
     CONTENEDOR_CHOICES = [
-        ('ContenedorConFondo', 'Contenedor: Titulo + Descripcion + Foto'),
-        ('ContenedorConFondoSoloTitulo', 'Contenedor: Titulo + Descripcion + Foto'),
-        ('ContenedorICM', 'Contenedor: Titulo + Encabezado + Descripcion + Foto'),
+        ('ContenedorConFondo', 'Tipo 1'),
+        ('ContenedorConFondoSoloTitulo', 'Tipo 2'),
+        ('ContenedorICM', 'Contenedor: Tipo 3'),
         ('Evento', 'Contenedor: Evento'),
         ('Acontecimiento', 'Contenedor: Acontecimiento'),
         ('Efemeride', 'Contenedor: Efemeride'),
     ]
 
 
-
     tipo_contenedor = models.CharField(max_length=50, choices=CONTENEDOR_CHOICES)
-    #posicion_en_pantalla = models.PositiveIntegerField(unique=True)
     seleccionar_efemeride = models.ForeignKey('Efemerides', on_delete=models.CASCADE, related_name='banner_principal', null=True)
     seleccionar_acontecimiento = models.ForeignKey('Acontecimiento', on_delete=models.CASCADE, related_name='banner_principal', null=True)
     seleccionar_evento = models.ForeignKey('Evento', on_delete=models.CASCADE, related_name='banner_principal', null=True)
@@ -95,38 +102,32 @@ class BannerPrincipal(models.Model):
         ('0d032b', 'malva'),
         ('ed8500', 'naranja'),
     ]
-
-    # TEXT_TIPOGRAPHY_CHOICES = [
-    #     ('Bw Darius DEMO Bold', 'Bw Darius DEMO Bold'),
-    #     ('Bw Darius DEMO Regular','Bw Darius DEMO Regular'),
-    #     ('Montserrat Medium', 'Montserrat Medium'),
-    #     ('Montserrat Regular','Montserrat Regular'),
-    #     ('Montserrat Italic', 'Montserrat Italic'),
-    # ]
-
     titulo = RichTextField(config_name = 'small', blank=True, null=True)
     encabezado = RichTextField(config_name = 'small', blank=True, null=True)
     descripcion = RichTextField(blank=True, null=True)
-    enlace = models.URLField(max_length=200, null=True)
-    foto = models.FileField(upload_to='images/', max_length=100, null=True)
+    foto = models.FileField(upload_to='images/', null=True)
+
+    def get_foto_url(self):
+        if self.foto and hasattr(self.foto, 'url'):
+            return 'https://back.dcubamusica.cult.cu/public/' + self.foto.url
+        return None
+
 
 
     color_de_fondo = models.CharField(max_length=7, choices=TEXT_COLOR_CHOICES, null=True)
-    # color_de_letra = models.CharField(max_length=7, choices=TEXT_COLOR_CHOICES, null=True)
-    # color_boton = models.CharField(max_length=7, choices=TEXT_COLOR_CHOICES, null=True)
-    # color_letra_boton = models.CharField(max_length=7, choices=TEXT_COLOR_CHOICES, null=True)
-
-
-    # tipografia_titulo = models.CharField(max_length=50, choices=TEXT_TIPOGRAPHY_CHOICES, null=True)
-    # tipografia_encabezado = models.CharField(max_length=50, choices=TEXT_TIPOGRAPHY_CHOICES, null=True)
-    # tipografia_descripcion = models.CharField(max_length=50, choices=TEXT_TIPOGRAPHY_CHOICES, null=True)
-    # tipografia_enlace = models.CharField(max_length=50, choices=TEXT_TIPOGRAPHY_CHOICES, null=True)
-
-
-    numero_unico = models.PositiveIntegerField(unique=True, blank=True, null=True)
+    numero_unico = models.PositiveIntegerField(unique=True, blank=False, null=False)
 
     def __str__(self):
-        return self.tipo_contenedor
+        if self.seleccionar_efemeride and self.seleccionar_efemeride.titulo:
+            return str(self.seleccionar_efemeride.titulo)
+        elif self.seleccionar_acontecimiento and self.seleccionar_acontecimiento.titulo:
+            return str(self.seleccionar_acontecimiento.titulo)
+        elif self.seleccionar_evento and self.seleccionar_evento.titulo:
+            return str(self.seleccionar_evento.titulo)
+        else:
+            return str(self.titulo)
+
+
 
 class Iconos (models.Model):
     class Meta:
@@ -139,45 +140,28 @@ class Iconos (models.Model):
 
     ]
 
-    seccion = models.CharField(max_length=50, choices=ICON_CHOICES)
-    foto = models.FileField(upload_to='logos/', max_length=1000, null=True)
+    seccion = models.CharField(max_length=50, choices=ICON_CHOICES, blank=False, null=False)
+    foto = models.FileField(upload_to='logos/', blank=False, null=False)
+
+    def get_foto_url(self):
+        if self.foto and hasattr(self.foto, 'url'):
+            return 'https://back.dcubamusica.cult.cu/public/' + self.foto.url
+        return None
 
     def __str__(self):
         return self.seccion
 
 
-
-class Seccion_Efemerides (models.Model):
-    class Meta:
-        verbose_name_plural = "Seccion Efemerides"
-    seleccionar_efemeride = models.ForeignKey('Efemerides', on_delete=models.CASCADE, related_name='seccion_efemerides', null=True)
-    TEXT_COLOR_CHOICES = [
-        ('#000000', 'negro'),
-        ('#ffffff','blanco'),
-        ('#4f4f4f', 'gris'),
-        ('#29385c', 'azul'),
-        ('36454d', 'verde'),
-        ('0d032b', 'malva'),
-        ('ed8500', 'naranja'),
-    ]
-    color_de_fondo = models.CharField(max_length=7, choices=TEXT_COLOR_CHOICES, null=True)
-    numero_unico = models.PositiveIntegerField(unique=True, blank=True, null=True)
-
-    def __str__(self):
-        return self.seleccionar_efemeride.titulo
-
-
 class Evento (models.Model):
     class Meta:
         verbose_name_plural = "Eventos"
-    titulo = RichTextField(config_name = 'small', blank=True, null=True)
-    descripcion = RichTextField(blank=True, null=True)
-    fecha = models.DateField()
-    hora = models.TimeField()
-    enlace = models.URLField(max_length=200)
-    foto = models.FileField(upload_to='images/', max_length=100,null=True)
-    # mostrar_en_banner_principal = models.BooleanField()
 
+    titulo = RichTextField(config_name = 'small', blank=False, null=False)
+    fecha = models.DateField()
+    encabezado = RichTextField(blank=False, null=False)
+    descripcion = RichTextField(blank=False, null=False)
+    enlace = models.URLField(max_length=200,blank=False, null=False)
+    hora = models.TimeField(blank=False, null=False)
 
     TEXT_COLOR_CHOICES = [
         ('#000000', 'negro'),
@@ -188,34 +172,24 @@ class Evento (models.Model):
         ('0d032b', 'malva'),
         ('ed8500', 'naranja'),
     ]
-
-    # TEXT_TIPOGRAPHY_CHOICES = [
-    #     ('Bw Darius DEMO Bold', 'Bw Darius DEMO Bold'),
-    #     ('Bw Darius DEMO Regular','Bw Darius DEMO Regular'),
-    #     ('Montserrat Medium', 'Montserrat Medium'),
-    #     ('Montserrat Regular','Montserrat Regular'),
-    #     ('Montserrat Italic', 'Montserrat Italic'),
-    # ]
-
-    # tipografía_de_letra = models.CharField(max_length=100, choices=TEXT_TIPOGRAPHY_CHOICES, default = 'Montserrat Medium')
-    # tipografía_de_titulo = models.CharField(max_length=100, choices=TEXT_TIPOGRAPHY_CHOICES, default = 'Bw Darius DEMO Bold')
-    # color_de_letra = models.CharField(max_length=7,choices=TEXT_COLOR_CHOICES, default='#000000')
-    # color_de_titulo = models.CharField(max_length=7,choices=TEXT_COLOR_CHOICES, default='#000000')
     color_de_fondo = models.CharField(max_length=7,choices=TEXT_COLOR_CHOICES, default='#ffffff', null=True)
-    foto_de_fondo = models.FileField(upload_to='images/', max_length=100, null=True)
+    foto = models.FileField(upload_to='images/', max_length=100, null=True)
+
+    def get_foto_url(self):
+        if self.foto and hasattr(self.foto, 'url'):
+            return 'https://back.dcubamusica.cult.cu/public/' + self.foto.url
 
 
     def __str__(self):
-        return self.titulo
+        return str(self.titulo)
 
 
 class Historia_de_la_Institución (models.Model):
     class Meta:
         verbose_name_plural = "Historia de la Institución"
-    titulo = RichTextField(config_name = 'small', blank=True, null=True)
-    descripcion = RichTextField(blank=True, null=True)
-    foto = models.FileField(upload_to='images/', max_length=100)
-    # tipografía = models.CharField(max_length=100)
+    titulo = RichTextField(config_name = 'small', blank=False, null=False)
+    descripcion = RichTextField(blank=False, null=False)
+    foto = models.FileField(upload_to='images/', max_length=100,blank=True, null=True)
 
     TEXT_COLOR_CHOICES = [
         ('#000000', 'negro'),
@@ -226,34 +200,24 @@ class Historia_de_la_Institución (models.Model):
         ('0d032b', 'malva'),
         ('ed8500', 'naranja'),
     ]
-
-    # TEXT_TIPOGRAPHY_CHOICES = [
-    #     ('Bw Darius DEMO Bold', 'Bw Darius DEMO Bold'),
-    #     ('Bw Darius DEMO Regular','Bw Darius DEMO Regular'),
-    #     ('Montserrat Medium', 'Montserrat Medium'),
-    #     ('Montserrat Regular','Montserrat Regular'),
-    #     ('Montserrat Italic', 'Montserrat Italic'),
-    # ]
-
-    # tipografía_de_letra = models.CharField(max_length=100, choices=TEXT_TIPOGRAPHY_CHOICES, default = 'Montserrat Medium')
-    # tipografía_de_titulo = models.CharField(max_length=100, choices=TEXT_TIPOGRAPHY_CHOICES, default = 'Bw Darius DEMO Bold')
-    # color_de_letra = models.CharField(max_length=7,choices=TEXT_COLOR_CHOICES, default='#000000')
-    # color_de_titulo = models.CharField(max_length=7,choices=TEXT_COLOR_CHOICES, default='#000000')
     color_de_fondo = models.CharField(max_length=7,choices=TEXT_COLOR_CHOICES, default='#ffffff', null=True)
-    foto_de_fondo = models.FileField(upload_to='images/', max_length=100, null=True)
+
+    def get_foto_url(self):
+        if self.foto and hasattr(self.foto, 'url'):
+            return 'https://back.dcubamusica.cult.cu/public/' + self.foto.url
 
 
 
     def __str__(self):
-        return self.titulo
+        return str(self.titulo)
 
 class Centros_y_Empresas (models.Model):
     class Meta:
         verbose_name_plural = "Centros y Empresas"
-    nombre = RichTextField(config_name = 'small', blank=True, null=True)
-    dirección = models.CharField(max_length=500)
-    télefono = models.CharField(max_length=20)
-    correo = models.EmailField(max_length=100)
+    nombre = RichTextField(config_name = 'small', blank=False, null=False)
+    dirección = models.CharField(max_length=500,blank=False, null=False)
+    télefono = models.CharField(max_length=20,blank=False, null=False)
+    correo = models.EmailField(max_length=100,blank=False, null=False)
 
     TEXT_COLOR_CHOICES = [
         ('#000000', 'negro'),
@@ -265,68 +229,32 @@ class Centros_y_Empresas (models.Model):
         ('ed8500', 'naranja'),
     ]
 
-    # TEXT_TIPOGRAPHY_CHOICES = [
-    #     ('Bw Darius DEMO Bold', 'Bw Darius DEMO Bold'),
-    #     ('Bw Darius DEMO Regular','Bw Darius DEMO Regular'),
-    #     ('Montserrat Medium', 'Montserrat Medium'),
-    #     ('Montserrat Regular','Montserrat Regular'),
-    #     ('Montserrat Italic', 'Montserrat Italic'),
-    # ]
-
-    # tipografía_de_letra = models.CharField(max_length=100, choices=TEXT_TIPOGRAPHY_CHOICES, default = 'Montserrat Medium')
-    # tipografía_de_titulo = models.CharField(max_length=100, choices=TEXT_TIPOGRAPHY_CHOICES, default = 'Bw Darius DEMO Bold')
-    # color_de_letra = models.CharField(max_length=7,choices=TEXT_COLOR_CHOICES, default='#000000')
-    # color_de_titulo = models.CharField(max_length=7,choices=TEXT_COLOR_CHOICES, default='#000000')
-    color_de_fondo = models.CharField(max_length=7,choices=TEXT_COLOR_CHOICES, default='#ffffff', null=True)
-    foto_de_fondo = models.FileField(upload_to='images/', max_length=100, null=True)
-
     def __str__(self):
-        return self.nombre
+        return str(self.nombre)
 
 class Directores (models.Model):
     class Meta:
         verbose_name_plural = "Directores"
-    nombre = RichTextField(config_name = 'small', blank=True, null=True)
-    foto = models.FileField(upload_to='images/', max_length=100 , null=True)
-    cargo = models.CharField(max_length=100)
-    télefono = models.CharField(max_length=20)
-    correo = models.EmailField(max_length=100)
-    consejo_de_dirección = models.BooleanField()
-    empresa = models.OneToOneField("Centros_y_Empresas", on_delete=models.CASCADE)
-
-    # TEXT_COLOR_CHOICES = [
-    #     ('#000000', 'negro'),
-    #     ('#ffffff','blanco'),
-    #     ('#4f4f4f', 'gris'),
-    #     ('#29385c', 'azul'),
-    #     ('36454d', 'verde'),
-    #     ('0d032b', 'malva'),
-    #     ('ed8500', 'naranja'),
-    # ]
-
-    # TEXT_TIPOGRAPHY_CHOICES = [
-    #     ('Bw Darius DEMO Bold', 'Bw Darius DEMO Bold'),
-    #     ('Bw Darius DEMO Regular','Bw Darius DEMO Regular'),
-    #     ('Montserrat Medium', 'Montserrat Medium'),
-    #     ('Montserrat Regular','Montserrat Regular'),
-    #     ('Montserrat Italic', 'Montserrat Italic'),
-    # ]
-
-    # tipografía_de_letra = models.CharField(max_length=100, choices=TEXT_TIPOGRAPHY_CHOICES, default = 'Montserrat Medium')
-    # color_de_letra = models.CharField(max_length=7,choices=TEXT_COLOR_CHOICES, default='#000000')
+    nombre = RichTextField(config_name = 'small', blank=False, null=False)
+    foto = models.FileField(upload_to='images/', max_length=100 , default='https://back.dcubamusica.cult.cu/public/images/blank.webp' ,null=True)
+    cargo = models.CharField(max_length=100,blank=False, null=False)
+    télefono = models.CharField(max_length=20,blank=False, null=False)
+    correo = models.EmailField(max_length=100,blank=False, null=False)
+    consejo_de_dirección = models.BooleanField(blank=False, null=False)
+    empresa = models.OneToOneField("Centros_y_Empresas", on_delete=models.CASCADE,blank=False, null=False)
 
 
     def __str__(self):
-        return self.nombre
+        return str(self.nombre)
 
 class Premio_Nacional_de_Música (models.Model):
     class Meta:
         verbose_name_plural = "Premio Nacional de Música"
-    titulo = RichTextField(config_name = 'small', blank=True, null=True)
+    titulo = RichTextField(config_name = 'small', blank=False, null=False)
     año = models.DateField()
-    descripcion = RichTextField(blank=True, null=True)
-    bibliografía = models.CharField(max_length=500)
-    foto = models.FileField(upload_to='images/', max_length=100, null=True)
+    descripcion = RichTextField(blank=False, null=False)
+    bibliografía = RichTextField(config_name = 'small', blank=True, null=True)
+    foto = models.FileField(upload_to='images/', max_length=100, blank=True, null=True)
 
 
     TEXT_COLOR_CHOICES = [
@@ -339,35 +267,24 @@ class Premio_Nacional_de_Música (models.Model):
         ('ed8500', 'naranja'),
     ]
 
-    # TEXT_TIPOGRAPHY_CHOICES = [
-    #     ('Bw Darius DEMO Bold', 'Bw Darius DEMO Bold'),
-    #     ('Bw Darius DEMO Regular','Bw Darius DEMO Regular'),
-    #     ('Montserrat Medium', 'Montserrat Medium'),
-    #     ('Montserrat Regular','Montserrat Regular'),
-    #     ('Montserrat Italic', 'Montserrat Italic'),
-    # ]
-
-    # tipografía_de_letra = models.CharField(max_length=100, choices=TEXT_TIPOGRAPHY_CHOICES, default = 'Montserrat Medium')
-    # tipografía_de_titulo = models.CharField(max_length=100, choices=TEXT_TIPOGRAPHY_CHOICES, default = 'Bw Darius DEMO Bold')
-    # color_de_letra = models.CharField(max_length=7,choices=TEXT_COLOR_CHOICES, default='#000000')
-    # color_de_titulo = models.CharField(max_length=7,choices=TEXT_COLOR_CHOICES, default='#000000')
     color_de_fondo = models.CharField(max_length=7,choices=TEXT_COLOR_CHOICES, default='#ffffff', null=True)
-    foto_de_fondo = models.FileField(upload_to='images/', max_length=100, null=True)
 
-    # def __str__(self):
-    #     return self.titulo
+    def get_foto_url(self):
+        if self.foto and hasattr(self.foto, 'url'):
+            return 'https://back.dcubamusica.cult.cu/public/' + self.foto.url
+
+    def __str__(self):
+        return str(self.titulo)
 
 class Acontecimiento (models.Model):
     class Meta:
         verbose_name_plural = "Acontecimientos"
-    titulo = RichTextField(config_name = 'small', blank=True, null=True)
-    descripcion = RichTextField(blank=True, null=True)
-    fecha_de_publicación = models.DateField()
-    enlace = models.URLField(max_length=200)
-    foto = models.FileField(upload_to='images/', max_length=100)
-    # mostrar_en_banner_principal = models.BooleanField()
-    # relevante = models.BooleanField()
 
+    titulo = RichTextField(config_name = 'small', blank=False, null=False)
+    fecha = models.DateField(blank=False, null=False)
+    encabezado = RichTextField(blank=False, null=False)
+    descripcion = RichTextField(blank=False, null=False)
+    enlace = models.URLField(max_length=200, blank=False, null=False)
 
     TEXT_COLOR_CHOICES = [
         ('#000000', 'negro'),
@@ -378,36 +295,30 @@ class Acontecimiento (models.Model):
         ('0d032b', 'malva'),
         ('ed8500', 'naranja'),
     ]
-
-    # TEXT_TIPOGRAPHY_CHOICES = [
-    #     ('Bw Darius DEMO Bold', 'Bw Darius DEMO Bold'),
-    #     ('Bw Darius DEMO Regular','Bw Darius DEMO Regular'),
-    #     ('Montserrat Medium', 'Montserrat Medium'),
-    #     ('Montserrat Regular','Montserrat Regular'),
-    #     ('Montserrat Italic', 'Montserrat Italic'),
-    # ]
-
-    # tipografía_de_letra = models.CharField(max_length=100, choices=TEXT_TIPOGRAPHY_CHOICES, default = 'Montserrat Medium')
-    # tipografía_de_titulo = models.CharField(max_length=100, choices=TEXT_TIPOGRAPHY_CHOICES, default = 'Bw Darius DEMO Bold')
-    # color_de_letra = models.CharField(max_length=7,choices=TEXT_COLOR_CHOICES, default='#000000')
-    # color_de_titulo = models.CharField(max_length=7,choices=TEXT_COLOR_CHOICES, default='#000000')
     color_de_fondo = models.CharField(max_length=7,choices=TEXT_COLOR_CHOICES, default='#ffffff', null=True)
-    foto_de_fondo = models.FileField(upload_to='images/', max_length=100, null=True)
+    foto = models.FileField(upload_to='images/', max_length=100, blank=False, null=False)
 
+    def get_foto_url(self):
+        if self.foto and hasattr(self.foto, 'url'):
+            return 'https://back.dcubamusica.cult.cu/public/' + self.foto.url
 
     def __str__(self):
-        return self.titulo
+        return str(self.titulo)
 
 
 class Multimedia (models.Model):
     class Meta:
         verbose_name_plural = "Multimedias"
-    nombre = RichTextField(config_name = 'small', blank=True, null=True)
+    nombre = RichTextField(config_name = 'small', blank=False, null=False)
 
-    descripcion = RichTextField(blank=True, null=True)
+    descripcion = RichTextField(blank=False, null=False)
     tipo = models.CharField(max_length=100)
-    enlace = models.URLField(max_length=200)
-    foto = models.FileField(upload_to='images/', max_length=100)
+    enlace = models.URLField(max_length=200,blank=False, null=False)
+    foto = models.FileField(upload_to='images/', max_length=100,blank=True, null=True)
+
+    def get_foto_url(self):
+        if self.foto and hasattr(self.foto, 'url'):
+            return 'https://back.dcubamusica.cult.cu/public/' + self.foto.url
 
 
     TEXT_COLOR_CHOICES = [
@@ -420,36 +331,18 @@ class Multimedia (models.Model):
         ('ed8500', 'naranja'),
     ]
 
-    # TEXT_TIPOGRAPHY_CHOICES = [
-    #     ('Bw Darius DEMO Bold', 'Bw Darius DEMO Bold'),
-    #     ('Bw Darius DEMO Regular','Bw Darius DEMO Regular'),
-    #     ('Montserrat Medium', 'Montserrat Medium'),
-    #     ('Montserrat Regular','Montserrat Regular'),
-    #     ('Montserrat Italic', 'Montserrat Italic'),
-    # ]
-
-    # tipografía_de_letra = models.CharField(max_length=100, choices=TEXT_TIPOGRAPHY_CHOICES, default = 'Montserrat Medium')
-    # tipografía_de_titulo = models.CharField(max_length=100, choices=TEXT_TIPOGRAPHY_CHOICES, default = 'Bw Darius DEMO Bold')
-    # color_de_letra = models.CharField(max_length=7,choices=TEXT_COLOR_CHOICES, default='#000000')
-    # color_de_titulo = models.CharField(max_length=7,choices=TEXT_COLOR_CHOICES, default='#000000')
     color_de_fondo = models.CharField(max_length=7,choices=TEXT_COLOR_CHOICES, default='#ffffff', null=True)
-    foto_de_fondo = models.FileField(upload_to='images/', max_length=100, null=True)
 
     def __str__(self):
-        return self.nombre
+        return str(self.nombre)
 
 class Efemerides (models.Model):
     class Meta:
         verbose_name_plural = "Efemérides"
-    titulo = RichTextField(config_name = 'small', blank=True, null=True)
+    titulo = RichTextField(config_name = 'small', blank=False, null=False)
     fecha = models.DateField()
-    descripcion = RichTextField(blank=True, null=True)
-    #foto = models.FileField(upload_to='images/', max_length=100)
-   # premio_nacional_de_la_música = models.OneToOneField("Premio_Nacional_de_Música", on_delete=models.CASCADE)
-    #enlace = models.URLField(max_length=200)
-    # mostrar_en_banner_principal = models.BooleanField()
-    # relevante = models.BooleanField()
-
+    encabezado = RichTextField(blank=False, null=False)
+    descripcion = RichTextField(blank=False, null=False)
 
     TEXT_COLOR_CHOICES = [
         ('#000000', 'negro'),
@@ -460,22 +353,13 @@ class Efemerides (models.Model):
         ('0d032b', 'malva'),
         ('ed8500', 'naranja'),
     ]
-
-    # TEXT_TIPOGRAPHY_CHOICES = [
-    #     ('Bw Darius DEMO Bold', 'Bw Darius DEMO Bold'),
-    #     ('Bw Darius DEMO Regular','Bw Darius DEMO Regular'),
-    #     ('Montserrat Medium', 'Montserrat Medium'),
-    #     ('Montserrat Regular','Montserrat Regular'),
-    #     ('Montserrat Italic', 'Montserrat Italic'),
-    # ]
-
-    # tipografía_de_letra = models.CharField(max_length=100, choices=TEXT_TIPOGRAPHY_CHOICES, default = 'Montserrat Medium')
-    # tipografía_de_titulo = models.CharField(max_length=100, choices=TEXT_TIPOGRAPHY_CHOICES, default = 'Bw Darius DEMO Bold')
-    # color_de_letra = models.CharField(max_length=7,choices=TEXT_COLOR_CHOICES, default='#000000')
-    # color_de_titulo = models.CharField(max_length=7,choices=TEXT_COLOR_CHOICES, default='#000000')
     color_de_fondo = models.CharField(max_length=7,choices=TEXT_COLOR_CHOICES, default='#ffffff', null=True)
-   # foto_de_fondo = models.FileField(upload_to='images/', max_length=100, null=True)
+    foto = models.FileField(upload_to='images/', max_length=100, blank=True, null=True)
+
+    def get_foto_url(self):
+        if self.foto and hasattr(self.foto, 'url'):
+            return 'https://back.dcubamusica.cult.cu/public/' + self.foto.url
 
 
-    # def __str__(self):
-    #     return self.titulo
+    def __str__(self):
+        return str(self.titulo)

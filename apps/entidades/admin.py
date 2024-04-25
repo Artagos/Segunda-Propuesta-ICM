@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import Efemerides, Acontecimiento, Evento, Centros_y_Empresas, Directores, Historia_de_la_Institución, Multimedia, Premio_Nacional_de_Música
-from .models import BannerPrincipal, Seccion_Efemerides, Iconos, Revista, Podcast #ContenedorConFondo, ContenedorConFondoSoloTitulo, ContenedorICM,
+from .models import BannerPrincipal, Iconos, Revista, Podcast #ContenedorConFondo, ContenedorConFondoSoloTitulo, ContenedorICM,
 from django import forms
 from django.utils.html import strip_tags
 
@@ -52,6 +52,12 @@ class BannerPrincipalForm(forms.ModelForm):
         seleccionar_acontecimiento = cleaned_data.get('seleccionar_acontecimiento')
         seleccionar_evento = cleaned_data.get('seleccionar_evento')
 
+        # Verificar si más de un tipo de contenedor ha sido seleccionado
+        selected = [bool(seleccionar_efemeride), bool(seleccionar_acontecimiento), bool(seleccionar_evento)]
+        if selected.count(True) > 1:
+            raise forms.ValidationError("Solo puedes seleccionar un tipo de contenedor a la vez.")
+
+
         # Validar si el tipo_contenedor es efemeride, acontecimiento o evento y verificar que se haya seleccionado el elemento correspondiente
         if tipo_contenedor == 'Efemeride':
             if not seleccionar_efemeride:
@@ -73,7 +79,10 @@ class BannerPrincipalForm(forms.ModelForm):
 
         if numero_unico is not None:
             # Validar que el número único no esté repetido
-            if BannerPrincipal.objects.filter(numero_unico=numero_unico).exists():
+            query = BannerPrincipal.objects.filter(numero_unico=numero_unico)
+            if self.instance.id:
+                query = query.exclude(id=self.instance.id)
+            if query.exists():
                 self.add_error('numero_unico', 'Este número ya está en uso.')
         return cleaned_data
 
@@ -90,7 +99,6 @@ class BannerPrincipalAdmin(admin.ModelAdmin):
         form.base_fields['titulo'].required = False
         form.base_fields['encabezado'].required = False
         form.base_fields['descripcion'].required = False
-        form.base_fields['enlace'].required = False
         form.base_fields['foto'].required = False
         form.base_fields['color_de_fondo'].required = False
         # form.base_fields['color_de_letra'].required = False
@@ -104,43 +112,74 @@ class BannerPrincipalAdmin(admin.ModelAdmin):
 
     pass
 
-class SeccionEfemerideForm(forms.ModelForm):
+# class SeccionEfemerideForm(forms.ModelForm):
 
-    numero_unico = forms.IntegerField(label='Posición del Contenedor')
+#     numero_unico = forms.IntegerField(label='Posición del Contenedor')
 
-    class Meta:
-        model = BannerPrincipal
-        fields = '__all__'
+#     class Meta:
+#         model = BannerPrincipal
+#         fields = '__all__'
 
-    def clean(self):
-        cleaned_data = super().clean()
-        numero_unico = cleaned_data.get('numero_unico')
+#     def clean(self):
+#         cleaned_data = super().clean()
+#         numero_unico = cleaned_data.get('numero_unico')
 
-        if numero_unico is not None:
-            # Validar que el número único no esté repetido
-            if BannerPrincipal.objects.filter(numero_unico=numero_unico).exists():
-                self.add_error('numero_unico', 'Este número ya está en uso.')
-        return cleaned_data
+#         if numero_unico is not None:
+#             # Validar que el número único no esté repetido
+#             if BannerPrincipal.objects.filter(numero_unico=numero_unico).exists():
+#                 self.add_error('numero_unico', 'Este número ya está en uso.')
+#         return cleaned_data
 
-class SeccionEfemerideAdmin(admin.ModelAdmin):
+# class SeccionEfemerideAdmin(admin.ModelAdmin):
 
-    form = SeccionEfemerideForm
-    pass
+#     form = SeccionEfemerideForm
+#     pass
 
 
 
 admin.site.register(BannerPrincipal, BannerPrincipalAdmin)
-admin.site.register(Iconos)
 
+class RichTextFieldAdmin(admin.ModelAdmin):
+    def get_titulo_plain(self, obj):
+        return strip_tags(obj.titulo)
+    get_titulo_plain.short_description = 'titulo'
 
-admin.site.register(Seccion_Efemerides, SeccionEfemerideAdmin)
+    def get_desc_plain(self, obj):
+        return strip_tags(obj.descripcion)
+    get_desc_plain.short_description = 'descripcion'
 
-# Register your models here.
-admin.site.register(Efemerides)
-admin.site.register(Acontecimiento)
-admin.site.register(Evento)
-admin.site.register(Centros_y_Empresas)
-admin.site.register(Directores)
-admin.site.register(Historia_de_la_Institución)
-admin.site.register(Multimedia)
-admin.site.register(Premio_Nacional_de_Música)
+@admin.register(Iconos)
+class IconosAdmin(admin.ModelAdmin):
+    list_display = ('seccion', 'get_foto_url')
+
+@admin.register(Evento)
+class EventoAdmin(RichTextFieldAdmin):
+    list_display = ('get_titulo_plain', 'fecha', 'get_desc_plain', 'enlace', 'hora', 'color_de_fondo', 'get_foto_url')
+
+@admin.register(Historia_de_la_Institución)
+class HistoriaAdmin(RichTextFieldAdmin):
+    list_display = ('get_titulo_plain', 'get_desc_plain', 'get_foto_url', 'color_de_fondo')
+
+@admin.register(Centros_y_Empresas)
+class CentrosAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'dirección', 'télefono', 'correo')
+
+@admin.register(Directores)
+class DirectoresAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'cargo', 'télefono', 'correo', 'consejo_de_dirección', 'empresa')
+
+@admin.register(Premio_Nacional_de_Música)
+class PremioAdmin(RichTextFieldAdmin):
+    list_display = ('get_titulo_plain', 'año', 'get_desc_plain', 'bibliografía', 'get_foto_url', 'color_de_fondo')
+
+@admin.register(Acontecimiento)
+class AcontecimientoAdmin(RichTextFieldAdmin):
+    list_display = ('get_titulo_plain', 'fecha', 'get_desc_plain', 'enlace', 'color_de_fondo', 'get_foto_url')
+
+@admin.register(Multimedia)
+class MultimediaAdmin(RichTextFieldAdmin):
+    list_display = ('get_titulo_plain', 'get_desc_plain', 'tipo', 'enlace', 'get_foto_url', 'color_de_fondo')
+
+@admin.register(Efemerides)
+class EfemeridesAdmin(RichTextFieldAdmin):
+    list_display = ('get_titulo_plain', 'fecha', 'get_desc_plain', 'color_de_fondo', 'get_foto_url')
