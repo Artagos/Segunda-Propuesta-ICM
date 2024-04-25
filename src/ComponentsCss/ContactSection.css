@@ -1,0 +1,25 @@
+.contact-section {
+    max-width: 800px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: #000000;
+    
+    box-shadow: 0 40px 40px rgba(0, 0, 0, 0.5);
+}
+
+.contact-info {
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+
+.leader {
+    font-weight: bold;
+}
+
+@media (max-width: 900px) {
+    /* Adjust styles for smaller screens if necessary */
+    .contact-section {
+        margin: 20px auto;
+        padding: 10px;
+    }
+}
