@@ -150,15 +150,15 @@ class RichTextFieldAdmin(admin.ModelAdmin):
 
 @admin.register(Iconos)
 class IconosAdmin(admin.ModelAdmin):
-    list_display = ('seccion', 'get_foto_url')
+    list_display = ('seccion', 'foto')
 
 @admin.register(Evento)
 class EventoAdmin(RichTextFieldAdmin):
-    list_display = ('get_titulo_plain', 'fecha', 'get_desc_plain', 'enlace', 'hora', 'color_de_fondo', 'get_foto_url')
+    list_display = ('get_titulo_plain', 'fecha', 'get_desc_plain', 'enlace', 'hora', 'color_de_fondo', 'foto')
 
 @admin.register(Historia_de_la_Institución)
 class HistoriaAdmin(RichTextFieldAdmin):
-    list_display = ('get_titulo_plain', 'get_desc_plain', 'get_foto_url', 'color_de_fondo')
+    list_display = ('get_titulo_plain', 'get_desc_plain', 'foto', 'color_de_fondo')
 
 @admin.register(Centros_y_Empresas)
 class CentrosAdmin(admin.ModelAdmin):
@@ -166,20 +166,20 @@ class CentrosAdmin(admin.ModelAdmin):
 
 @admin.register(Directores)
 class DirectoresAdmin(admin.ModelAdmin):
-    list_display = ('nombre', 'cargo', 'télefono', 'correo', 'consejo_de_dirección', 'empresa')
+    list_display = ('nombre', 'cargo', 'télefono', 'correo', 'consejo_de_dirección', 'empresa', 'foto')
 
 @admin.register(Premio_Nacional_de_Música)
 class PremioAdmin(RichTextFieldAdmin):
-    list_display = ('get_titulo_plain', 'año', 'get_desc_plain', 'bibliografía', 'get_foto_url', 'color_de_fondo')
+    list_display = ('get_titulo_plain', 'año', 'get_desc_plain', 'bibliografía', 'foto', 'color_de_fondo')
 
 @admin.register(Acontecimiento)
 class AcontecimientoAdmin(RichTextFieldAdmin):
-    list_display = ('get_titulo_plain', 'fecha', 'get_desc_plain', 'enlace', 'color_de_fondo', 'get_foto_url')
+    list_display = ('get_titulo_plain', 'fecha', 'get_desc_plain', 'enlace', 'color_de_fondo', 'foto')
 
 @admin.register(Multimedia)
 class MultimediaAdmin(RichTextFieldAdmin):
-    list_display = ('get_titulo_plain', 'get_desc_plain', 'tipo', 'enlace', 'get_foto_url', 'color_de_fondo')
+    list_display = ('get_titulo_plain', 'get_desc_plain', 'tipo', 'enlace', 'foto', 'color_de_fondo')
 
 @admin.register(Efemerides)
 class EfemeridesAdmin(RichTextFieldAdmin):
-    list_display = ('get_titulo_plain', 'fecha', 'get_desc_plain', 'color_de_fondo', 'get_foto_url')
+    list_display = ('get_titulo_plain', 'fecha', 'get_desc_plain', 'color_de_fondo', 'foto')
