@@ -1,0 +1,52 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Select Form Option</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'admin/css/base.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'admin/css/forms.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'admin/css/widgets.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'admin/css/dashboard.css' %}">
+    <script src="{% static 'admin/js/core.js' %}"></script>
+</head>
+<body class="dashboard">
+    <div id="container">
+
+        <div id="header">
+            <div id="branding">
+                <h1>ICM Admin</h1>
+            </div>
+        </div>
+
+        <div id="content" class="colM">
+            <h1>Select Form Option</h1>
+            <div class="module">
+                <form action="" method="post">
+                    {% csrf_token %}
+                    <fieldset class="module aligned">
+                        <div class="form-row">
+                            <label>
+                                <input type="radio" name="opcion" value="1" checked>
+                                Añadir Información Personalizada
+                            </label>
+                        </div>
+                        <div class="form-row">
+                            <label>
+                                <input type="radio" name="opcion" value="2">
+                                Añadir Información existente de una Efeméride, Evento o Acontecimiento
+                            </label>
+                        </div>
+                    </fieldset>
+                    <div class="submit-row">
+                        <input type="submit" value="Submit" class="default">
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="footer"></div>
+    </div>
+</body>
+</html>

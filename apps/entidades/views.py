@@ -10,6 +10,18 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
 from django.db.models.functions import ExtractMonth, ExtractDay, ExtractYear
 
+from django.shortcuts import render
+from django.urls import reverse
+from django.http import HttpResponseRedirect
+
+def select_banner_form(request):
+    if request.method == 'POST':
+        opcion = request.POST.get('opcion', '1')
+        add_url = reverse('admin:entidades_bannerprincipal_add') + f'?opcion={opcion}'
+        return HttpResponseRedirect(add_url)
+    return render(request, 'select_form.html')
+
+
 def lista_revistas(request):
     revistas = Revista.objects.all()
     contenedores_list = []

@@ -81,7 +81,7 @@ class BannerPrincipal(models.Model):
     CONTENEDOR_CHOICES = [
         ('ContenedorConFondo', 'Tipo 1'),
         ('ContenedorConFondoSoloTitulo', 'Tipo 2'),
-        ('ContenedorICM', 'Contenedor: Tipo 3'),
+        ('ContenedorICM', 'Tipo 3'),
         ('Evento', 'Contenedor: Evento'),
         ('Acontecimiento', 'Contenedor: Acontecimiento'),
         ('Efemeride', 'Contenedor: Efemeride'),
@@ -114,6 +114,7 @@ class BannerPrincipal(models.Model):
 
 
 
+
     color_de_fondo = models.CharField(max_length=7, choices=TEXT_COLOR_CHOICES, null=True)
     numero_unico = models.PositiveIntegerField(unique=True, blank=False, null=False)
 
@@ -126,6 +127,33 @@ class BannerPrincipal(models.Model):
             return str(self.seleccionar_evento.titulo)
         else:
             return str(self.titulo)
+
+    def save(self, *args, **kwargs):
+        if self.seleccionar_efemeride:
+            efemeride = self.seleccionar_efemeride
+            self.titulo = efemeride.titulo
+            self.descripcion = efemeride.descripcion
+            self.foto = efemeride.foto  # Asegúrate de que esto es válido
+            self.color_de_fondo = efemeride.color_de_fondo
+            self.encabezado = efemeride.encabezado
+        elif self.seleccionar_acontecimiento:
+            acontecimiento = self.seleccionar_acontecimiento
+            self.titulo = acontecimiento.titulo
+            self.descripcion = acontecimiento.descripcion
+            self.foto = acontecimiento.foto  # Asegúrate de que esto es válido
+            self.color_de_fondo = acontecimiento.color_de_fondo
+            self.encabezado = acontecimiento.encabezado
+        elif self.seleccionar_evento:
+            evento = self.seleccionar_evento
+            self.titulo = evento.titulo
+            self.descripcion = evento.descripcion
+            self.foto = evento.foto  # Asegúrate de que esto es válido
+            self.color_de_fondo = evento.color_de_fondo
+            self.encabezado = evento.encabezado
+
+        super().save(*args, **kwargs)
+
+
 
 
 
@@ -242,6 +270,11 @@ class Directores (models.Model):
     correo = models.EmailField(max_length=100,blank=False, null=False)
     consejo_de_dirección = models.BooleanField(blank=False, null=False)
     empresa = models.OneToOneField("Centros_y_Empresas", on_delete=models.CASCADE,blank=False, null=False)
+
+    def get_foto_url(self):
+        if self.foto and hasattr(self.foto, 'url'):
+            return 'https://back.dcubamusica.cult.cu/public/' + self.foto.url
+        return None
 
 
     def __str__(self):

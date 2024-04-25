@@ -2,6 +2,10 @@ from django.urls import path
 
 from . import views
 
+from .views import select_banner_form
+
+app_name = 'entidades'
+
 urlpatterns = [
     path('revistas/', views.lista_revistas, name='lista_revistas'),
     path('revistas/<int:id>/', views.detalle_revista, name='detalle_revista'),
@@ -18,4 +22,6 @@ urlpatterns = [
     path('acontecimientos_semana/', views.get_acontecimientos_semana, name='get_acontecimientos_semana'),
     path('eventos_semana/', views.get_eventos_semana, name='get_eventos_semana'),
     path('contactos/', views.get_centros_contactos, name='get_centros_contactos'),
+    path('select-banner-form/', select_banner_form, name='bannerprincipal_select'),
+
 ]
