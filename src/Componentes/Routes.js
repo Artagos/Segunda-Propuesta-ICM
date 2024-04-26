@@ -6,6 +6,7 @@ import Efemerides from "../Rutas/Efemerides"
 import Eventos from "../Rutas/Eventos"
 import Navbar from "./Navbar"
 import Podcasts from "../Rutas/Podcasts"
+import Premios from "../Rutas/Premios"
 const RoutesICM=()=>{
     return(<div>
     <BrowserRouter>
@@ -14,7 +15,7 @@ const RoutesICM=()=>{
         <Route  path={'QuienesSomos'} element={''} />
         <Route  path={'Efemerides'} element={<Efemerides/>} />
         <Route  path={'PremioNacionalMusica'} element={''} />
-        <Route  path={'Novedades'} element={''} />
+        <Route  path={'Premios'} element={<Efemerides/>} />
         <Route  path={'Multimedios'} element={''} />
         <Route  path={'Revista'} element={<Revista/>} />
         <Route  path={'Podcasts'}  element={<Podcasts/>}/>

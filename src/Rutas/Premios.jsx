@@ -1,5 +1,8 @@
 import ContenedorICM from "../Componentes/ContenedoresICM";
 import Navbar from "../Componentes/Navbar";
+import React from "react";
+import http from "./axiosAux";
+
 const Premios = () => { 
     const [elements,setElements]=React.useState([]);
     React.useEffect(()=>{
@@ -23,7 +26,7 @@ const Premios = () => {
             <ContenedorICM titulo={element.titulo} encabezado={element.encabezado} 
         descripcion={element.descripcion} imagen={element.foto} />
         ))}
-        
+
         </div>
     );
 }
