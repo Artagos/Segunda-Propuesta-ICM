@@ -27,11 +27,11 @@ def lista_revistas(request):
 
     for contenedor in revistas:
         contenedores_list.append({
-            'id': contenedor['id'],
-            'titulo': contenedor['titulo'],
-            'descripcion': contenedor['descripcion'],
-            'foto': contenedor.get_foto_url(),
-            'pdf': contenedor.get_pdf_url(),
+            'id': contenedor.id,
+            'titulo': contenedor.titulo,
+            'descripcion': contenedor.descripcion,
+            'foto': 'https://back.dcubamusica.cult.cu' + (contenedor.imagen_portada.url if contenedor.imagen_portada else ''),
+            'pdf': 'https://back.dcubamusica.cult.cu' + (contenedor.pdf.url if contenedor.pdf else ''),
         })
 
     return JsonResponse(contenedores_list, safe=False)
@@ -42,8 +42,8 @@ def detalle_revista(request, id):
     data = {
         'titulo': revista.titulo,
         'descripcion': revista.descripcion,
-        'pdf_url': revista.pdf.url if revista.pdf else None,
-        'imagen_portada_url': revista.imagen_portada.url if revista.imagen_portada else None,
+        'pdf': 'https://back.dcubamusica.cult.cu' + (contenedor.pdf.url if contenedor.pdf else ''),
+        'foto': 'https://back.dcubamusica.cult.cu' + (contenedor.imagen_portada.url if contenedor.imagen_portada else ''),
     }
     return JsonResponse(data)
 
@@ -57,7 +57,7 @@ def lista_podcasts(request):
             'titulo': podcast.titulo,
             'descripcion': podcast.descripcion,
             'link_podcast': podcast.link_podcast,
-            'foto': podcast.get_foto_url(),
+            'foto': 'https://back.dcubamusica.cult.cu' + (podcast.foto.url if podcast.foto else ''),
         }
         podcasts_data.append(podcast_data)
     return JsonResponse(podcasts_data, safe=False)
@@ -75,7 +75,7 @@ def get_banner_principal(request):
             'seleccionar_evento': contenedor.seleccionar_evento.id if contenedor.seleccionar_evento else None,
             'titulo': contenedor.titulo,
             'descripcion': contenedor.descripcion,
-            'foto': 'https://back.dcubamusica.cult.cu/public/' + (contenedor.foto.url if contenedor.foto else ''),
+            'foto': 'https://back.dcubamusica.cult.cu' + (contenedor.foto.url if contenedor.foto else ''),
             'color_de_fondo': contenedor.color_de_fondo,
             'numero_unico': contenedor.numero_unico,
             'encabezado': contenedor.encabezado,
@@ -126,7 +126,7 @@ def get_iconos(request):
     iconos_data = [
         {
             'seccion': icono.get_seccion_display(),
-            'foto': 'https://back.dcubamusica.cult.cu/public/' + icono.foto,
+            'foto': 'https://back.dcubamusica.cult.cu' + icono.foto,
 
         }
         for icono in iconos_seleccionados
@@ -143,7 +143,7 @@ def get_all_efem(request):
 
 
     for contenedor in contenedores:
-        foto_url = 'https://back.dcubamusica.cult.cu/public/' + contenedor['foto'] if contenedor['foto']  and hasattr(contenedor['foto'] , 'url') else None
+        foto_url = 'https://back.dcubamusica.cult.cu' + contenedor['foto'] if contenedor['foto']  and hasattr(contenedor['foto'] , 'url') else None
 
         contenedores_list.append({
             'id': contenedor['id'],
@@ -170,7 +170,7 @@ def get_efem_by_date(request, day, month):
             'titulo': contenedor['titulo'],
             'fecha': contenedor['fecha'],
             'descripcion': contenedor['descripcion'],
-            'foto': 'https://back.dcubamusica.cult.cu/public/' + contenedor['foto'],
+            'foto': 'https://back.dcubamusica.cult.cu' + contenedor['foto'],
             'color_de_fondo': contenedor['color_de_fondo'],
             'encabezado': contenedor['encabezado'],
         })
@@ -189,7 +189,7 @@ def get_acontecimiento_by_date(request, month, year):
             'titulo': acontecimiento['titulo'],
             'fecha': acontecimiento['fecha'],
             'descripcion': acontecimiento['descripcion'],
-            'foto': 'https://back.dcubamusica.cult.cu/public/' + acontecimiento['foto'],
+            'foto': 'https://back.dcubamusica.cult.cu' + acontecimiento['foto'],
             'color_de_fondo': acontecimiento['color_de_fondo'],
             'encabezado': acontecimiento['encabezado'],
         })
@@ -206,7 +206,7 @@ def get_evento_by_date(request, month, year):
             'titulo': evento['titulo'],
             'fecha': evento['fecha'],
             'descripcion': evento['descripcion'],
-            'foto': 'https://back.dcubamusica.cult.cu/public/' + evento['foto'],
+            'foto': 'https://back.dcubamusica.cult.cu' + evento['foto'],
             'color_de_fondo': evento['color_de_fondo'],
             'encabezado': evento['encabezado'],
             'hora': evento['hora'],
@@ -225,7 +225,7 @@ def get_historia(request):
             'id': contenedor['id'],
             'titulo': contenedor['titulo'],
             'descripcion': contenedor['descripcion'],
-            'foto': 'https://back.dcubamusica.cult.cu/public/' + contenedor['foto'],
+            'foto': 'https://back.dcubamusica.cult.cu' + contenedor['foto'],
             'color_de_fondo': contenedor['color_de_fondo'],
 
         })
@@ -242,7 +242,7 @@ def get_centros_y_directores(request):
             'nombre': contenedor['nombre'],
             'telefono': contenedor['télefono'],
             'consejo_de_direccion': contenedor['consejo_de_dirección'],
-            'foto': 'https://back.dcubamusica.cult.cu/public/' + contenedor['foto'],
+            'foto': 'https://back.dcubamusica.cult.cu' + contenedor['foto'],
             'color_de_fondo': contenedor['color_de_fondo'],
             'cargo': contenedor['cargo'],
             'empresa': str(contenedor['empresa'].nombre),
@@ -264,7 +264,7 @@ def get_premios(request):
             'id': contenedor['id'],
             'titulo': contenedor['titulo'],
             'descripcion': contenedor['descripcion'],
-            'foto': 'https://back.dcubamusica.cult.cu/public/' + contenedor['foto'],
+            'foto': 'https://back.dcubamusica.cult.cu' + contenedor['foto'],
             'color_de_fondo': contenedor['color_de_fondo'],
             'bibliografia': contenedor['bibliografia'],
         })
@@ -284,7 +284,7 @@ def get_acontecimientos_semana(request):
             'titulo': acontecimiento['titulo'],
             'fecha': acontecimiento['fecha'],
             'descripcion': acontecimiento['descripcion'],
-            'foto': 'https://back.dcubamusica.cult.cu/public/' + acontecimiento['foto'],
+            'foto': 'https://back.dcubamusica.cult.cu' + acontecimiento['foto'],
             'color_de_fondo': acontecimiento['color_de_fondo'],
             'encabezado': acontecimiento['encabezado'],
         })
@@ -304,7 +304,7 @@ def get_eventos_semana(request):
             'titulo': evento['titulo'],
             'fecha': evento['fecha'],
             'descripcion': evento['descripcion'],
-            'foto': 'https://back.dcubamusica.cult.cu/public/' + evento['foto'],
+            'foto': 'https://back.dcubamusica.cult.cu' + evento['foto'],
             'color_de_fondo': evento['color_de_fondo'],
             'encabezado': evento['encabezado'],
             'hora': evento['hora'],
@@ -322,7 +322,7 @@ def get_centros_contactos(request):
             'nombre': contenedor['nombre'],
             'telefono': contenedor['télefono'],
             'direccion': contenedor['dirección'],
-            'foto': 'https://back.dcubamusica.cult.cu/public/' + contenedor['foto'],
+            'foto': 'https://back.dcubamusica.cult.cu' + contenedor['foto'],
             'correo': contenedor['correo'],
 
 
