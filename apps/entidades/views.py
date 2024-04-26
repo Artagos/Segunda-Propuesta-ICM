@@ -64,10 +64,15 @@ def lista_podcasts(request):
     return JsonResponse(podcasts_data, safe=False)
 
 def get_banner_principal(request):
+
+    for contenedor in BannerPrincipal.objects.all():
+        contenedor.save()
+
     contenedores = BannerPrincipal.objects.all().order_by('numero_unico').values()
     contenedores_list = []
 
     for contenedor in contenedores:
+
         foto_url = ('https://back.dcubamusica.cult.cu/public/'+contenedor.get('foto') if contenedor.get('foto') else None)
 
         contenedor_dict = {
@@ -89,28 +94,36 @@ def get_banner_principal(request):
             'numero_unico': contenedor['numero_unico'],
         }
 
-        # if contenedor.seleccionar_efemeride is not None:
-        #     efemeride = Efemerides.objects.get(id=contenedor.seleccionar_efemeride)
+        # if contenedor['tipo_contenedor'] == 'Efemeride':
+
+        #     efemeride = Efemerides.objects.get(id=contenedor['seleccionar_efemeride_id'])
+        #     foto_url = ('https://back.dcubamusica.cult.cu/public/'+efemeride.get('foto') if efemeride.get('foto') else None)
+
+
         #     contenedor_dict['titulo'] = efemeride.titulo
         #     contenedor_dict['descripcion'] = efemeride.descripcion
-        #     contenedor_dict['foto'] = efemeride.get_foto_url()
+        #     contenedor_dict['foto'] = foto_url
         #     contenedor_dict['color_de_fondo'] = efemeride.color_de_fondo
         #     contenedor_dict['encabezado'] = efemeride.encabezado
 
-        # elif contenedor.seleccionar_acontecimiento is not None:
-        #     acontecimiento = Acontecimiento.objects.get(id=contenedor.seleccionar_acontecimiento)
+        # elif contenedor['tipo_contenedor'] == 'Acontecimiento':
+        #     acontecimiento = Acontecimiento.objects.get(id=contenedor['seleccionar_acontecimiento_id']).value()
+        #     foto_url = ('https://back.dcubamusica.cult.cu/public/'+acontecimiento.get('foto') if acontecimiento.get('foto') else None)
+
         #     contenedor_dict['titulo'] = acontecimiento.titulo
         #     contenedor_dict['descripcion'] = acontecimiento.descripcion
-        #     contenedor_dict['foto'] = acontecimiento.get_foto_url()
+        #     contenedor_dict['foto'] = foto_url
         #     contenedor_dict['color_de_fondo'] = acontecimiento.color_de_fondo
         #     contenedor_dict['encabezado'] = acontecimiento.encabezado
         #     contenedor_dict['enlace'] = evento.enlace
 
-        # elif contenedor.seleccionar_evento is not None:
-        #     evento = Evento.objects.get(id=contenedor.seleccionar_evento)
+        # elif contenedor['tipo_contenedor'] =='Evento':
+        #     evento = Evento.objects.get(id=contenedor['seleccionar_evento_id']).value()
+        #     foto_url = ('https://back.dcubamusica.cult.cu/public/'+evento.get('foto') if evento.get('foto') else None)
+
         #     contenedor_dict['titulo'] = evento.titulo
         #     contenedor_dict['descripcion'] = evento.descripcion
-        #     contenedor_dict['foto'] = evento.get_foto_url()
+        #     contenedor_dict['foto'] = foto_url
         #     contenedor_dict['color_de_fondo'] = evento.color_de_fondo
         #     contenedor_dict['encabezado'] = evento.encabezado
         #     contenedor_dict['enlace'] = evento.enlace
@@ -152,7 +165,7 @@ def get_all_efem(request):
 
 
     for contenedor in contenedores:
-        foto_url = 'https://back.dcubamusica.cult.cu' + contenedor['foto'] if contenedor['foto']  and hasattr(contenedor['foto'] , 'url') else None
+        foto_url = ('https://back.dcubamusica.cult.cu/public/'+contenedor.get('foto') if contenedor.get('foto') else None)
 
         contenedores_list.append({
             'id': contenedor['id'],
@@ -175,7 +188,27 @@ def get_efem_by_date(request, day, month):
 
     for contenedor in contenedores:
 
-        foto_url = 'https://back.dcubamusica.cult.cu' + contenedor['foto'] if contenedor['foto']  and hasattr(contenedor['foto'] , 'url') else None
+        foto_url = ('https://back.dcubamusica.cult.cu/public/'+contenedor.get('foto') if contenedor.get('foto') else None)
+
+        contenedores_list.append({
+            'id': contenedor['id'],
+            'titulo': contenedor['titulo'],
+            'fecha': contenedor['fecha'],
+            'descripcion': contenedor['descripcion'],
+            'foto': foto_url,
+            'color_de_fondo': contenedor['color_de_fondo'],
+            'encabezado': contenedor['encabezado'],
+        })
+
+    return JsonResponse(contenedores_list, safe=False)
+
+def get_efem_by_month(request, month):
+    contenedores = Efemerides.objects.filter(fecha__month=month).order_by('fecha').values()
+    contenedores_list = []
+
+    for contenedor in contenedores:
+
+        foto_url = ('https://back.dcubamusica.cult.cu/public/'+contenedor.get('foto') if contenedor.get('foto') else None)
 
         contenedores_list.append({
             'id': contenedor['id'],
@@ -196,8 +229,7 @@ def get_acontecimiento_by_date(request, month, year):
     acontecimientos_list = []
 
     for acontecimiento in acontecimientos:
-        foto_url = 'https://back.dcubamusica.cult.cu' + acontecimiento['foto'] if acontecimiento['foto']  and hasattr(acontecimiento['foto'] , 'url') else None
-
+        foto_url = ('https://back.dcubamusica.cult.cu/public/'+acontecimiento.get('foto') if acontecimiento.get('foto') else None)
         acontecimientos_list.append({
             'id': acontecimiento['id'],
             'titulo': acontecimiento['titulo'],
@@ -215,8 +247,7 @@ def get_evento_by_date(request, month, year):
     eventos_list = []
 
     for evento in eventos:
-        foto_url = 'https://back.dcubamusica.cult.cu' + evento['foto'] if evento['foto']  and hasattr(evento['foto'] , 'url') else None
-
+        foto_url = ('https://back.dcubamusica.cult.cu/public/'+evento.get('foto') if evento.get('foto') else None)
         eventos_list.append({
             'id': evento['id'],
             'titulo': evento['titulo'],
@@ -237,8 +268,7 @@ def get_historia(request):
     contenedores_list = []
 
     for contenedor in historia:
-        foto_url = 'https://back.dcubamusica.cult.cu' + contenedor['foto'] if contenedor['foto']  and hasattr(contenedor['foto'] , 'url') else None
-
+        foto_url = ('https://back.dcubamusica.cult.cu/public/'+contenedor.get('foto') if contenedor.get('foto') else None)
         contenedores_list.append({
             'id': contenedor['id'],
             'titulo': contenedor['titulo'],
@@ -255,8 +285,7 @@ def get_centros_y_directores(request):
     contenedores_list = []
 
     for contenedor in centros_y_directores:
-        foto_url = 'https://back.dcubamusica.cult.cu' + contenedor['foto'] if contenedor['foto']  and hasattr(contenedor['foto'] , 'url') else None
-
+        foto_url = ('https://back.dcubamusica.cult.cu/public/'+contenedor.get('foto') if contenedor.get('foto') else None)
         contenedores_list.append({
             'id': contenedor['id'],
             'nombre': contenedor['nombre'],
@@ -279,8 +308,7 @@ def get_premios(request):
     contenedores_list = []
 
     for contenedor in premios:
-        foto_url = 'https://back.dcubamusica.cult.cu' + contenedor['foto'] if contenedor['foto']  and hasattr(contenedor['foto'] , 'url') else None
-
+        foto_url = ('https://back.dcubamusica.cult.cu/public/'+contenedor.get('foto') if contenedor.get('foto') else None)
         contenedores_list.append({
 
             'id': contenedor['id'],
@@ -301,8 +329,7 @@ def get_acontecimientos_semana(request):
     acontecimientos_list = []
 
     for acontecimiento in acontecimientos_semana:
-        foto_url = 'https://back.dcubamusica.cult.cu' + acontecimiento['foto'] if acontecimiento['foto']  and hasattr(acontecimiento['foto'] , 'url') else None
-
+        foto_url = ('https://back.dcubamusica.cult.cu/public/'+acontecimiento.get('foto') if acontecimiento.get('foto') else None)
         acontecimientos_list.append({
             'id': acontecimiento['id'],
             'titulo': acontecimiento['titulo'],
@@ -323,8 +350,7 @@ def get_eventos_semana(request):
     eventos_list = []
 
     for evento in eventos_semana:
-        foto_url = 'https://back.dcubamusica.cult.cu' + evento['foto'] if evento['foto']  and hasattr(evento['foto'] , 'url') else None
-
+        foto_url = ('https://back.dcubamusica.cult.cu/public/'+evento.get('foto') if evento.get('foto') else None)
         eventos_list.append({
             'id': evento['id'],
             'titulo': evento['titulo'],
@@ -343,8 +369,7 @@ def get_centros_contactos(request):
     contenedores_list = []
 
     for contenedor in centros:
-        foto_url = 'https://back.dcubamusica.cult.cu' + contenedor['foto'] if contenedor['foto']  and hasattr(contenedor['foto'] , 'url') else None
-
+        foto_url = ('https://back.dcubamusica.cult.cu/public/'+contenedor.get('foto') if contenedor.get('foto') else None)
         contenedores_list.append({
             'id': contenedor['id'],
             'nombre': contenedor['nombre'],
