@@ -315,8 +315,9 @@ def get_premios(request):
             'titulo': contenedor['titulo'],
             'descripcion': contenedor['descripcion'],
             'foto': foto_url,
+            'año' : contenedor['año'].year,
             'color_de_fondo': contenedor['color_de_fondo'],
-            'bibliografia': contenedor['bibliografia'],
+            'bibliografia': contenedor['bibliografía'],
         })
 
     return JsonResponse(contenedores_list, safe=False)
