@@ -203,9 +203,14 @@ class Evento (models.Model):
     color_de_fondo = models.CharField(max_length=7,choices=TEXT_COLOR_CHOICES, default='#ffffff', null=True)
     foto = models.FileField(upload_to='images/', max_length=100, null=True)
 
-    def get_foto_url(self):
-        if self.foto and hasattr(self.foto, 'url'):
-            return 'https://back.dcubamusica.cult.cu/public/' + self.foto.url
+    def get_foto_url(objeto):
+        """
+        Devuelve la URL completa de la foto de un objeto, asumiendo que el objeto tiene un campo 'foto'.
+        """
+        if objeto.foto and hasattr(objeto.foto, 'url'):
+            return 'https://back.dcubamusica.cult.cu/public/' + objeto.foto.url
+        return None
+
 
 
     def __str__(self):
