@@ -5,7 +5,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from datetime import datetime, timedelta
 from calendar import monthrange
 from django.http import JsonResponse
-from .models import Efemerides, Acontecimiento, Evento, Centros_y_Empresas, Directores, Historia_de_la_Institución, Multimedia, Premio_Nacional_de_Música, Iconos, Revista, BannerPrincipal, Podcast
+from .models import Efemerides, Acontecimiento, Evento, Centros_y_Empresas, Directores, Redes,Historia_de_la_Institución, Multimedia, Premio_Nacional_de_Música, Iconos, Revista, BannerPrincipal, Podcast
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
 from django.db.models.functions import ExtractMonth, ExtractDay, ExtractYear
@@ -23,44 +23,61 @@ def select_banner_form(request):
     return render(request, 'select_form.html')
 
 def lista_revistas(request):
-    revistas = Revista.objects.all()
+    revistas = Revista.objects.all().order_by('-fecha').values()
     contenedores_list = []
 
     for contenedor in revistas:
+        foto_url = ('https://back.dcubamusica.cult.cu/public/'+contenedor.get('imagen_portada') if contenedor.get('imagen_portada') else None)
+        pdfurl = ('https://back.dcubamusica.cult.cu/public/'+contenedor.get('pdf') if contenedor.get('pdf') else None)
+
         contenedores_list.append({
-            'id': contenedor.id,
-            'titulo': contenedor.titulo,
-            'descripcion': contenedor.descripcion,
-            'foto': ('https://back.dcubamusica.cult.cu' + contenedor.imagen_portada.url if contenedor.imagen_portada else None),
-            'pdf': ('https://back.dcubamusica.cult.cu' + contenedor.pdf.url if contenedor.pdf else None),
+            'id': contenedor['id'],
+            'titulo': contenedor['titulo'],
+            'descripcion': contenedor['descripcion'],
+            'foto': foto_url,
+            'pdf': pdfurl,
         })
 
     return JsonResponse(contenedores_list, safe=False)
 
 
 def detalle_revista(request, id):
-    revista = get_object_or_404(Revista, pk=id)
-    data = {
-        'titulo': revista.titulo,
-        'descripcion': revista.descripcion,
-        'pdf':('https://back.dcubamusica.cult.cu' + contenedor.pdf.url if contenedor.pdf else None),
-        'foto': ('https://back.dcubamusica.cult.cu' + contenedor.imagen_portada.url if contenedor.imagen_portada else None),
+    # Intenta obtener los detalles de la revista como un diccionario dado un ID
+    try:
+        revista = Revista.objects.filter(id=id).values('id', 'titulo', 'descripcion', 'imagen_portada', 'pdf').get()
+    except Revista.DoesNotExist:
+        return JsonResponse({'error': 'Revista no encontrada'}, status=404)
+
+    # Construye las URLs de las imágenes y pdfs, si existen
+    foto_url = f'https://back.dcubamusica.cult.cu/public/{revista["imagen_portada"]}' if revista["imagen_portada"] else None
+    pdf_url = f'https://back.dcubamusica.cult.cu/public/{revista["pdf"]}' if revista["pdf"] else None
+
+    # Prepara el diccionario con los datos de la revista actualizados
+    revista_data = {
+        'id': revista['id'],
+        'titulo': revista['titulo'],
+        'descripcion': revista['descripcion'],
+        'foto': foto_url,
+        'pdf': pdf_url,
     }
-    return JsonResponse(data)
+
+    return JsonResponse(revista_data)
+
 
 
 def lista_podcasts(request):
-    podcasts = Podcast.objects.all()
+    podcasts = Podcast.objects.all().values()
     podcasts_data = []
-    for podcast in podcasts:
-        podcast_data = {
-            'id': podcast.id,
-            'titulo': podcast.titulo,
-            'descripcion': podcast.descripcion,
-            'link_podcast': podcast.link_podcast,
-            'foto': ('https://back.dcubamusica.cult.cu' + podcast.foto.url if podcast.foto else None),
-        }
-        podcasts_data.append(podcast_data)
+    for contenedor in podcasts:
+        foto_url = ('https://back.dcubamusica.cult.cu/public/'+contenedor.get('imagen_portada') if contenedor.get('imagen_portada') else None)
+
+        podcasts_data.append({
+            'id': contenedor['id'],
+            'titulo': contenedor['titulo'],
+            'descripcion': contenedor['descripcion'],
+            'link_podcast': contenedor['link_podcast'],
+            'foto': foto_url
+        })
     return JsonResponse(podcasts_data, safe=False)
 
 def get_banner_principal(request):
@@ -281,30 +298,41 @@ def get_historia(request):
     return JsonResponse(contenedores_list, safe=False)
 
 def get_centros_y_directores(request):
-    centros_y_directores = Directores.objects.select_related('empresa').all().values()
+    # Se especifican los campos de la empresa con la sintaxis 'empresa__campo'
+    centros_y_directores = Directores.objects.select_related('empresa').all().values(
+        # 'id', 'nombre', 'telefono', 'consejo_de_direccion', 'foto', 'cargo',
+        # 'empresa__nombre',  # Por ejemplo, si la empresa tiene un campo 'nombre'
+        # 'es_cto', 'es_ceo'
+    )
     contenedores_list = []
 
     for contenedor in centros_y_directores:
-        foto_url = ('https://back.dcubamusica.cult.cu/public/'+contenedor.get('foto') if contenedor.get('foto') else None)
+        foto_url = f'https://back.dcubamusica.cult.cu/public/{contenedor.get("foto")}' if contenedor.get('foto') else None
+        # Si la empresa no es None, obtiene el nombre limpio del campo RichTextField
+        # if contenedor.get('empresa__nombre'):
+        #     empresa_nombre = strip_tags(contenedor['empresa__nombre'])
+        # else:
+        #     empresa_nombre = 'Sin empresa'
+
+        empresa_nombre = contenedor.get('empresa_id')
+
         contenedores_list.append({
             'id': contenedor['id'],
             'nombre': contenedor['nombre'],
-            'telefono': contenedor['télefono'],
+            'telefono': contenedor.get('télefono'),
             'consejo_de_direccion': contenedor['consejo_de_dirección'],
             'foto': foto_url,
-            'color_de_fondo': contenedor['color_de_fondo'],
             'cargo': contenedor['cargo'],
-            'empresa': str(contenedor['empresa'].nombre),
-
-
-
-
+            'empresa': empresa_nombre,
+            'cto': contenedor.get('es_cto', False),
+            'ceo': contenedor.get('es_ceo', False),
         })
 
     return JsonResponse(contenedores_list, safe=False)
 
+
 def get_premios(request):
-    premios = Premio_Nacional_de_Música.objects.order_by('año').values()
+    premios = Premio_Nacional_de_Música.objects.order_by('-año').values()
     contenedores_list = []
 
     for contenedor in premios:
@@ -315,7 +343,7 @@ def get_premios(request):
             'titulo': contenedor['titulo'],
             'descripcion': contenedor['descripcion'],
             'foto': foto_url,
-            'año' : contenedor['año'].year,
+            'año' : contenedor['año'],
             'color_de_fondo': contenedor['color_de_fondo'],
             'bibliografia': contenedor['bibliografía'],
         })
@@ -385,13 +413,78 @@ def get_centros_contactos(request):
 
     return JsonResponse(contenedores_list, safe=False)
 
-# def get_directores_nombres(request):
-#     directores = Directores.objects.all().values()
-#     data = [
-#         {
-#             'nombre': director.nombre,
 
-#         }
-#         for director in directores
-#     ]
-#     return JsonResponse(data, safe=False)
+def get_redes(request):
+    # Se especifican los campos de la empresa con la sintaxis 'empresa__campo'
+    redes = Redes.objects.all().values(
+    )
+    contenedores_list = []
+
+    for contenedor in redes:
+        foto_url = f'https://back.dcubamusica.cult.cu/public/{contenedor.get("foto")}' if contenedor.get('foto') else None
+
+        contenedores_list.append({
+            'id': contenedor['id'],
+            'titulo': contenedor['titulo'],
+            'enlace': contenedor['enlace'],
+            'foto': foto_url,
+
+        })
+
+    return JsonResponse(contenedores_list, safe=False)
+
+def get_multimedias(request):
+    # Se especifican los campos de la empresa con la sintaxis 'empresa__campo'
+    multimedias = Multimedia.objects.all().values(
+    )
+    contenedores_list = []
+
+    for contenedor in multimedias:
+        foto_url = f'https://back.dcubamusica.cult.cu/public/{contenedor.get("foto")}' if contenedor.get('foto') else None
+        multimedia = ('https://back.dcubamusica.cult.cu/public/'+contenedor.get('archivo') if contenedor.get('archivo') else None)
+
+        # Si la empresa no es None, obtiene el nombre limpio del campo RichTextField
+        # if contenedor.get('empresa__nombre'):
+        #     empresa_nombre = strip_tags(contenedor['empresa__nombre'])
+        # else:
+        #     empresa_nombre = 'Sin empresa'
+        contenedores_list.append({
+            'id': contenedor['id'],
+            'titulo': contenedor['titulo'],
+            'tipo': contenedor.get('tipo'),
+            'enlace': contenedor['enlace'],
+            'foto': foto_url,
+            'archivo': multimedia,
+            'descripcion': contenedor['descripcion'],
+            'color_de_fondo': contenedor['color_de_fondo'],
+
+        })
+
+    return JsonResponse(contenedores_list, safe=False)
+
+
+def detalle_multimedia(request, id):
+    # Intenta obtener los detalles de la revista como un diccionario dado un ID
+    try:
+        contenedor = Multimedia.objects.filter(id=id).values().get()
+    except Multimedia.DoesNotExist:
+        return JsonResponse({'error': 'Multimedia no encontrada'}, status=404)
+
+    # Construye las URLs de las imágenes y pdfs, si existen
+    foto_url = f'https://back.dcubamusica.cult.cu/public/{contenedor.get("foto")}' if contenedor.get('foto') else None
+
+    multimedia = ('https://back.dcubamusica.cult.cu/public/'+contenedor.get('archivo') if contenedor.get('archivo') else None)
+
+    # Prepara el diccionario con los datos de la revista actualizados
+    mult = {
+        'id': contenedor['id'],
+        'titulo': contenedor['titulo'],
+        'tipo': contenedor.get('tipo'),
+        'enlace': contenedor['enlace'],
+        'foto': foto_url,
+        'archivo': multimedia,
+        'descripcion': contenedor['descripcion'],
+        'color_de_fondo': contenedor['color_de_fondo'],
+    }
+
+    return JsonResponse(mult)

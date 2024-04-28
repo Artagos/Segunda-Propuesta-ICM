@@ -6,43 +6,61 @@ import fitz  # Importa PyMuPDF
 from django.core.files.base import ContentFile
 from ckeditor.fields import RichTextField
 
+
 class Revista(models.Model):
-
-    titulo = RichTextField(config_name = 'small', blank=False, null=False)
+    titulo = RichTextField(config_name='small', blank=False, null=False)
     descripcion = RichTextField(blank=False, null=False)
-    pdf = models.FileField(upload_to='pdfs/',blank=False, null=False)
-    imagen_portada = models.ImageField(upload_to='images/')
-
-    def get_foto_url(self):
-        if self.foto and hasattr(self.imagen_portada, 'url'):
-            return 'https://back.dcubamusica.cult.cu/public/' + self.foto.url
-        return None
-
-    def get_pdf_url(self):
-        if self.foto and hasattr(self.imagen_portada, 'url'):
-            return 'https://back.dcubamusica.cult.cu/public/' + self.pdf.url
-        return None
+    fecha = models.DateField(blank=False, null=False)
+    pdf = models.FileField(upload_to='pdfs/', blank=False, null=False)
+    imagen_portada = models.ImageField(upload_to='images/',blank=False, null=False)
 
     def __str__(self):
         return str(self.titulo)
 
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     if self.pk:
+    #         original = Revista.objects.get(pk=self.pk)
+    #         if original.pdf != self.pdf:  # Verifica si el PDF fue actualizado
+    #             self.update_imagen_portada()
+    #     else:
+    #         self.update_imagen_portada()
 
-        if not self.imagen_portada:
-            pdf_documento = fitz.open(self.pdf.path)
-            pagina = pdf_documento[0]
-            pix = pagina.get_pixmap()
-            imagen_bytes = pix.tobytes("png")
-            self.imagen_portada.save(f"portada_{self.pk}.png", ContentFile(imagen_bytes), save=False)
-            pdf_documento.close()
-            super().save(*args, **kwargs)
+    #     super().save(*args, **kwargs)
+
+    # def update_imagen_portada(self):
+    #     try:
+    #         pdf_documento = fitz.open(self.pdf.path)  # Intenta abrir el PDF
+    #         pagina = pdf_documento[0]  # Primera página
+    #         pix = pagina.get_pixmap()
+    #         imagen_bytes = pix.tobytes("png")
+    #         self.imagen_portada.save(f"portada_{self.pk}.png", ContentFile(imagen_bytes), save=False)
+    #     except Exception as e:
+    #         print(f"Error al procesar el PDF: {e}")
+    #     finally:
+    #         pdf_documento.close()
+
+    # def update_imagen_portada(self):
+    # # Solo actualiza la imagen si no hay una existente
+    #     if not self.imagen_portada:
+    #         try:
+    #             pdf_documento = fitz.open(self.pdf.path)
+    #             pagina = pdf_documento[0]
+    #             pix = pagina.get_pixmap()
+    #             imagen_bytes = pix.tobytes("png")
+    #             self.imagen_portada.save(f"portada_{self.pk}.png", ContentFile(imagen_bytes), save=False)
+    #         except Exception as e:
+    #             print(f"Error al procesar el PDF: {e}")
+    #         finally:
+    #             pdf_documento.close()
+
+
 
 
 class Podcast(models.Model):
     titulo = RichTextField(config_name = 'small', blank=False, null=False)
     descripcion = RichTextField(blank=False, null=False)
-    link_podcast = models.URLField(blank=False, null=False)  # Puede contener tanto URLs locales como externas
+    link_podcast = models.URLField(blank=True, null=True)  # Puede contener tanto URLs locales como externas
+    archivo_local = models.FileField(blank=True, upload_to='podcast/', null=True)
     foto = models.ImageField(upload_to='images/', null=True)
 
     def get_foto_url(self):
@@ -265,22 +283,22 @@ class Centros_y_Empresas (models.Model):
     def __str__(self):
         return str(self.nombre)
 
-class Directores (models.Model):
+class Directores(models.Model):
     class Meta:
         verbose_name_plural = "Directores"
-    nombre = RichTextField(config_name = 'small', blank=False, null=False)
-    foto = models.FileField(upload_to='images/', max_length=100 , default='https://back.dcubamusica.cult.cu/public/images/blank.webp' ,null=True)
-    cargo = models.CharField(max_length=100,blank=False, null=False)
-    télefono = models.CharField(max_length=20,blank=False, null=False)
-    correo = models.EmailField(max_length=100,blank=False, null=False)
-    consejo_de_dirección = models.BooleanField(blank=False, null=False)
-    empresa = models.OneToOneField("Centros_y_Empresas", on_delete=models.CASCADE,blank=False, null=False)
+
+    nombre = RichTextField(config_name='small', blank=False, null=False)
+    foto = models.FileField(upload_to='images/', default='images/blank.webp', blank=True,null=True)
+    cargo = models.CharField(max_length=100, blank=False, null=False)
+    télefono = models.CharField(max_length=20, blank=False, null=False)  # Corregido 'télefono' por 'telefono'
+    correo = models.EmailField(blank=False, null=False)
+    consejo_de_dirección = models.BooleanField(default=False, blank=True,null=True)  # Cambiado 'null=False' por 'default=False'
+    empresa = models.OneToOneField("Centros_y_Empresas", on_delete=models.CASCADE, blank=False, null=False)
+    es_ceo = models.BooleanField(default=False, verbose_name="¿Es CEO?")  # Campo booleano para CEO
+    es_cto = models.BooleanField(default=False, verbose_name="¿Es CTO?")  # Campo booleano para CTO
 
     def get_foto_url(self):
-        if self.foto and hasattr(self.foto, 'url'):
-            return 'https://back.dcubamusica.cult.cu/public/' + self.foto.url
-        return None
-
+        return self.foto.url if self.foto else 'https://back.dcubamusica.cult.cu/public/images/blank.webp'
 
     def __str__(self):
         return str(self.nombre)
@@ -289,7 +307,7 @@ class Premio_Nacional_de_Música (models.Model):
     class Meta:
         verbose_name_plural = "Premio Nacional de Música"
     titulo = RichTextField(config_name = 'small', blank=False, null=False)
-    año = models.DateField()
+    año = models.IntegerField(blank = False, null=False)
     descripcion = RichTextField(blank=False, null=False)
     bibliografía = RichTextField(config_name = 'small', blank=True, null=True)
     foto = models.FileField(upload_to='images/', max_length=100, blank=True, null=True)
@@ -347,12 +365,13 @@ class Acontecimiento (models.Model):
 class Multimedia (models.Model):
     class Meta:
         verbose_name_plural = "Multimedias"
-    nombre = RichTextField(config_name = 'small', blank=False, null=False)
+    titulo = RichTextField(config_name = 'small', blank=False, null=False)
 
     descripcion = RichTextField(blank=False, null=False)
     tipo = models.CharField(max_length=100)
-    enlace = models.URLField(max_length=200,blank=False, null=False)
-    foto = models.FileField(upload_to='images/', max_length=100,blank=True, null=True)
+    enlace = models.URLField(max_length=200,blank=True, null=True)
+    archivo = models.FileField(upload_to='multimedias/', blank=True, null=True)
+    foto = models.FileField(upload_to='multimedias/', max_length=100,blank=True, null=True)
 
     def get_foto_url(self):
         if self.foto and hasattr(self.foto, 'url'):
@@ -372,13 +391,13 @@ class Multimedia (models.Model):
     color_de_fondo = models.CharField(max_length=7,choices=TEXT_COLOR_CHOICES, default='#ffffff', null=True)
 
     def __str__(self):
-        return str(self.nombre)
+        return str(self.titulo)
 
 class Efemerides (models.Model):
     class Meta:
         verbose_name_plural = "Efemérides"
     titulo = RichTextField(config_name = 'small', blank=False, null=False)
-    fecha = models.DateField()
+    fecha = models.DateField(blank=False, null=False)
     encabezado = RichTextField(blank=False, null=False)
     descripcion = RichTextField(blank=False, null=False)
 
@@ -397,6 +416,19 @@ class Efemerides (models.Model):
     def get_foto_url(self):
         if self.foto and hasattr(self.foto, 'url'):
             return 'https://back.dcubamusica.cult.cu/public/' + self.foto.url
+
+
+    def __str__(self):
+        return str(self.titulo)
+
+
+
+class Redes (models.Model):
+    class Meta:
+        verbose_name_plural = "Redes"
+    titulo = RichTextField(config_name = 'small', blank=False, null=False)
+    enlace = models.URLField(max_length=200,blank=True, null=True)
+    foto = models.FileField(upload_to='redes/', max_length=100,blank=True, null=True)
 
 
     def __str__(self):
