@@ -11,6 +11,11 @@ import datetime
 from django.contrib.admin import SimpleListFilter
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
+from modeltranslation.admin import TranslationAdmin
+from . import translation
+from django.utils.translation import get_language
+
+
 
 
 
@@ -24,14 +29,356 @@ class RichTextFieldAdmin(admin.ModelAdmin):
     get_desc_plain.short_description = 'Descripción'
 
 
+
+# class RevistaAdminForm(forms.ModelForm):
+#     class Meta:
+#         model = Revista
+#         fields = '__all__'
+
+#     def __init__(self, *args, **kwargs):
+#         super(RevistaAdminForm, self).__init__(*args, **kwargs)
+#         # Hacer que los campos de idioma sean obligatorios
+#         # Obtener el idioma actual de la sesión
+#         current_language = get_language()
+
+#         # Ajustar los campos de idioma para ser obligatorios solo si están en el idioma actual
+#         for field_name in self.fields:
+#             if field_name.endswith(f'_{current_language}'):
+#                 self.fields[field_name].required = True
+#             else:
+#                 self.fields[field_name].required = False
+#         # Cambiar las etiquetas
+#         self.fields['titulo_en'].label = 'Title'
+#         self.fields['titulo_es'].label = 'Título'
+#         # Cambiar las etiquetas
+#         self.fields['descripcion_en'].label = 'Description'
+#         self.fields['descripcion_es'].label = 'Descripcion'
+
+# class EventoAdminForm(forms.ModelForm):
+#     class Meta:
+#         model = Evento
+#         fields = '__all__'
+
+#     def __init__(self, *args, **kwargs):
+#         super(EventoAdminForm, self).__init__(*args, **kwargs)
+#         # Hacer que los campos de idioma sean obligatorios
+#         # Obtener el idioma actual de la sesión
+#         current_language = get_language()
+
+#         # Ajustar los campos de idioma para ser obligatorios solo si están en el idioma actual
+#         for field_name in self.fields:
+#             if field_name.endswith(f'_{current_language}'):
+#                 self.fields[field_name].required = True
+#             else:
+#                 self.fields[field_name].required = False
+#         # Cambiar las etiquetas
+#         self.fields['titulo_en'].label = 'Title'
+#         self.fields['titulo_es'].label = 'Título'
+#         # Cambiar las etiquetas
+#         self.fields['descripcion_en'].label = 'Description'
+#         self.fields['descripcion_es'].label = 'Descripcion'
+
+#         self.fields['encabezado_en'].label = 'Subtitle'
+#         self.fields['encabezado_es'].label = 'Encabezado'
+
+#         self.fields['fecha_en'].label = 'Date'
+#         self.fields['fecha_es'].label = 'Fecha'
+
+# class PremioNacionalDeMusicaAdminForm(forms.ModelForm):
+#     class Meta:
+#         model = Premio_Nacional_de_Música
+#         fields = '__all__'
+
+
+#     def __init__(self, *args, **kwargs):
+#         super(PremioNacionalDeMusicaAdminForm, self).__init__(*args, **kwargs)
+#         # Hacer que los campos de idioma sean obligatorios
+#         # Obtener el idioma actual de la sesión
+#         current_language = get_language()
+
+#         # Ajustar los campos de idioma para ser obligatorios solo si están en el idioma actual
+#         for field_name in self.fields:
+#             if field_name.endswith(f'_{current_language}'):
+#                 self.fields[field_name].required = True
+#             else:
+#                 self.fields[field_name].required = False
+#         # Cambiar las etiquetas
+#         self.fields['titulo_en'].label = 'Title'
+#         self.fields['titulo_es'].label = 'Título'
+#         # Cambiar las etiquetas
+#         self.fields['descripcion_en'].label = 'Description'
+#         self.fields['descripcion_es'].label = 'Descripcion'
+
+#         self.fields['bibliografia_en'].label = 'Bibliography'
+#         self.fields['bibliografia_es'].label = 'Bibliografía'
+
+
+
+# class AcontecimientoAdminForm(forms.ModelForm):
+#     class Meta:
+#         model = Acontecimiento
+#         fields = '__all__'
+
+
+#     def __init__(self, *args, **kwargs):
+#         super(AcontecimientoAdminForm, self).__init__(*args, **kwargs)
+#         # Hacer que los campos de idioma sean obligatorios
+#         # Obtener el idioma actual de la sesión
+#         current_language = get_language()
+
+#         # Ajustar los campos de idioma para ser obligatorios solo si están en el idioma actual
+#         for field_name in self.fields:
+#             if field_name.endswith(f'_{current_language}'):
+#                 self.fields[field_name].required = True
+#             else:
+#                 self.fields[field_name].required = False
+#         # Cambiar las etiquetas
+#         self.fields['titulo_en'].label = 'Title'
+#         self.fields['titulo_es'].label = 'Título'
+#         # Cambiar las etiquetas
+#         self.fields['descripcion_en'].label = 'Description'
+#         self.fields['descripcion_es'].label = 'Descripcion'
+
+#         self.fields['encabezado_en'].label = 'Subtitle'
+#         self.fields['encabezado_es'].label = 'Encabezado'
+
+#         self.fields['fecha_en'].label = 'Date'
+#         self.fields['fecha_es'].label = 'Fecha'
+
+# class HistoriaDeLaInstitucionAdminForm(forms.ModelForm):
+#     class Meta:
+#         model = Historia_de_la_Institución
+#         fields = '__all__'
+
+
+#     def __init__(self, *args, **kwargs):
+#         super(HistoriaDeLaInstitucionAdminForm, self).__init__(*args, **kwargs)
+#         # Hacer que los campos de idioma sean obligatorios
+#         # Obtener el idioma actual de la sesión
+#         current_language = get_language()
+
+#         # Ajustar los campos de idioma para ser obligatorios solo si están en el idioma actual
+#         for field_name in self.fields:
+#             if field_name.endswith(f'_{current_language}'):
+#                 self.fields[field_name].required = True
+#             else:
+#                 self.fields[field_name].required = False
+#         # Cambiar las etiquetas
+#         self.fields['titulo_en'].label = 'Title'
+#         self.fields['titulo_es'].label = 'Título'
+#         # Cambiar las etiquetas
+#         self.fields['descripcion_en'].label = 'Description'
+#         self.fields['descripcion_es'].label = 'Descripcion'
+
+
+# class CentrosYEmpresasAdminForm(forms.ModelForm):
+#     class Meta:
+#         model = Centros_y_Empresas
+#         fields = '__all__'
+
+#     def __init__(self, *args, **kwargs):
+#         super(CentrosYEmpresasAdminForm, self).__init__(*args, **kwargs)
+#         # Hacer que los campos de idioma sean obligatorios
+#         # Obtener el idioma actual de la sesión
+#         current_language = get_language()
+
+#         # Ajustar los campos de idioma para ser obligatorios solo si están en el idioma actual
+#         for field_name in self.fields:
+#             if field_name.endswith(f'_{current_language}'):
+#                 self.fields[field_name].required = True
+#             else:
+#                 self.fields[field_name].required = False
+#         # Cambiar las etiquetas
+#         self.fields['nombre_en'].label = 'Name'
+#         self.fields['nombre_es'].label = 'Nombre'
+#         # Cambiar las etiquetas
+#         self.fields['direccion_en'].label = 'Address'
+#         self.fields['direccion_es'].label = 'Dirección'
+
+
+
+# class DirectoresAdminForm(forms.ModelForm):
+#     class Meta:
+#         model = Directores
+#         fields = '__all__'
+
+#     def __init__(self, *args, **kwargs):
+#         super(CentrosYEmpresasAdminForm, self).__init__(*args, **kwargs)
+#         # Hacer que los campos de idioma sean obligatorios
+#         # Obtener el idioma actual de la sesión
+#         current_language = get_language()
+
+#         # Ajustar los campos de idioma para ser obligatorios solo si están en el idioma actual
+#         for field_name in self.fields:
+#             if field_name.endswith(f'_{current_language}'):
+#                 self.fields[field_name].required = True
+#             else:
+#                 self.fields[field_name].required = False
+#         # Cambiar las etiquetas
+#         self.fields['nombre_en'].label = 'Name'
+#         self.fields['nombre_es'].label = 'Nombre'
+#         # Cambiar las etiquetas
+#         self.fields['cargo_en'].label = 'Work Position'
+#         self.fields['cargo_es'].label = 'Cargo'
+
+# class MultimediaAdminForm(forms.ModelForm):
+#     class Meta:
+#         model = Multimedia
+#         fields = '__all__'
+
+
+#     def __init__(self, *args, **kwargs):
+#         super(MultimediaAdminForm, self).__init__(*args, **kwargs)
+#         # Hacer que los campos de idioma sean obligatorios
+#         # Obtener el idioma actual de la sesión
+#         current_language = get_language()
+
+#         # Ajustar los campos de idioma para ser obligatorios solo si están en el idioma actual
+#         for field_name in self.fields:
+#             if field_name.endswith(f'_{current_language}'):
+#                 self.fields[field_name].required = True
+#             else:
+#                 self.fields[field_name].required = False
+#         # Cambiar las etiquetas
+#         self.fields['titulo_en'].label = 'Title'
+#         self.fields['titulo_es'].label = 'Título'
+#         # Cambiar las etiquetas
+#         self.fields['descripcion_en'].label = 'Description'
+#         self.fields['descripcion_es'].label = 'Descripcion'
+
+
+# class EfemeridesAdminForm(forms.ModelForm):
+#     class Meta:
+#         model = Efemerides
+#         fields = '__all__'
+
+
+#     def __init__(self, *args, **kwargs):
+#         super(EfemeridesAdminForm, self).__init__(*args, **kwargs)
+#         # Hacer que los campos de idioma sean obligatorios
+#         # Obtener el idioma actual de la sesión
+#         current_language = get_language()
+
+#         # Ajustar los campos de idioma para ser obligatorios solo si están en el idioma actual
+#         for field_name in self.fields:
+#             if field_name.endswith(f'_{current_language}'):
+#                 self.fields[field_name].required = True
+#             else:
+#                 self.fields[field_name].required = False
+#         # Cambiar las etiquetas
+#         self.fields['titulo_en'].label = 'Title'
+#         self.fields['titulo_es'].label = 'Título'
+#         # Cambiar las etiquetas
+#         self.fields['descripcion_en'].label = 'Description'
+#         self.fields['descripcion_es'].label = 'Descripcion'
+
+#         self.fields['encabezado_en'].label = 'Subtitle'
+#         self.fields['encabezado_es'].label = 'Encabezado'
+
+#         self.fields['fecha_en'].label = 'Date'
+#         self.fields['fecha_es'].label = 'Fecha'
+
+# class RedesAdminForm(forms.ModelForm):
+#     class Meta:
+#         model = Redes
+#         fields = '__all__'
+
+
+#     def __init__(self, *args, **kwargs):
+#         super(RedesAdminForm, self).__init__(*args, **kwargs)
+#         # Hacer que los campos de idioma sean obligatorios
+#         # Obtener el idioma actual de la sesión
+#         current_language = get_language()
+
+#         # Ajustar los campos de idioma para ser obligatorios solo si están en el idioma actual
+#         for field_name in self.fields:
+#             if field_name.endswith(f'_{current_language}'):
+#                 self.fields[field_name].required = True
+#             else:
+#                 self.fields[field_name].required = False
+#         # Cambiar las etiquetas
+#         self.fields['titulo_en'].label = 'Title'
+#         self.fields['titulo_es'].label = 'Título'
+#         # Cambiar las etiquetas
+#         self.fields['descripcion_en'].label = 'Description'
+#         self.fields['descripcion_es'].label = 'Descripcion'
+
+
+# class BannerPrincipalAdminForm(forms.ModelForm):
+#     class Meta:
+#         model = BannerPrincipal
+#         fields = '__all__'
+
+
+#     def __init__(self, *args, **kwargs):
+#         super(BannerPrincipalAdminForm, self).__init__(*args, **kwargs)
+#         # Hacer que los campos de idioma sean obligatorios
+#         # Obtener el idioma actual de la sesión
+#         current_language = get_language()
+
+#         # Ajustar los campos de idioma para ser obligatorios solo si están en el idioma actual
+#         for field_name in self.fields:
+#             if field_name.endswith(f'_{current_language}'):
+#                 self.fields[field_name].required = True
+#             else:
+#                 self.fields[field_name].required = False
+#         # Cambiar las etiquetas
+#         self.fields['titulo_en'].label = 'Title'
+#         self.fields['titulo_es'].label = 'Título'
+#         # Cambiar las etiquetas
+#         self.fields['descripcion_en'].label = 'Description'
+#         self.fields['descripcion_es'].label = 'Descripcion'
+
+#         self.fields['encabezado_en'].label = 'Subtitle'
+#         self.fields['encabezado_es'].label = 'Encabezado'
+
+
+
+
 @admin.register(Revista)
 class RevistaAdmin(RichTextFieldAdmin):
+    # form = RevistaAdminForm
+
     list_display = ('get_titulo_plain', 'get_desc_plain', 'fecha','pdf', 'imagen_portada')
+    # def get_form(self, request, obj=None, **kwargs):
+    #     # Llamar a la implementación base para obtener el formulario inicial
+    #     form = super().get_form(request, obj, **kwargs)
+
+    #     # Obtener el idioma actualmente activo
+    #     current_language = get_language()
+
+    #     # Ciclar a través de todos los campos del formulario
+    #     for field_name in list(form.base_fields):
+    #         if field_name.endswith('_en') or field_name.endswith('_es'):
+    #             # Habilitar solo los campos del idioma actual
+    #             if not field_name.endswith(f'_{current_language}'):
+    #                 form.base_fields[field_name].widget = forms.HiddenInput()
+
+    #     return form
 
 class PodcastAdminForm(forms.ModelForm):
     class Meta:
         model = Podcast
         fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super(PodcastAdminForm, self).__init__(*args, **kwargs)
+        # Hacer que los campos de idioma sean obligatorios
+        # Obtener el idioma actual de la sesión
+        current_language = get_language()
+
+        # Ajustar los campos de idioma para ser obligatorios solo si están en el idioma actual
+        for field_name in self.fields:
+            if field_name.endswith(f'_{current_language}'):
+                self.fields[field_name].required = True
+            else:
+                self.fields[field_name].required = False
+        # Cambiar las etiquetas
+        self.fields['titulo_en'].label = 'Title'
+        self.fields['titulo_es'].label = 'Título'
+        # Cambiar las etiquetas
+        self.fields['descripcion_en'].label = 'Description'
+        self.fields['descripcion_es'].label = 'Descripcion'
 
     def clean(self):
         cleaned_data = super().clean()
@@ -44,14 +391,35 @@ class PodcastAdminForm(forms.ModelForm):
 
         return cleaned_data
 
+
+
 @admin.register(Podcast)
-class PodcastAdmin(RichTextFieldAdmin):
+class PodcastAdmin(RichTextFieldAdmin,TranslationAdmin):
     form = PodcastAdminForm
     list_display = ('get_titulo_plain', 'get_desc_plain', 'link_podcast', 'archivo_local')
 
+    def get_form(self, request, obj=None, **kwargs):
+        # Llamar a la implementación base para obtener el formulario inicial
+        form = super().get_form(request, obj, **kwargs)
+
+        # Obtener el idioma actualmente activo
+        current_language = get_language()
+
+        # Ciclar a través de todos los campos del formulario
+        for field_name in list(form.base_fields):
+            if field_name.endswith('_en') or field_name.endswith('_es'):
+                # Habilitar solo los campos del idioma actual
+                if not field_name.endswith(f'_{current_language}'):
+                    form.base_fields[field_name].widget = forms.HiddenInput()
+
+        return form
+
+
 @admin.register(BannerPrincipal)
 class BannerPrincipalAdmin(admin.ModelAdmin):
+    # form = BannerPrincipalAdminForm
     list_display = ('titulo', 'encabezado', 'descripcion', 'foto', 'color_de_fondo', 'numero_unico', 'seleccionar_efemeride', 'seleccionar_acontecimiento', 'seleccionar_evento')
+
 
     def get_form(self, request, obj=None, **kwargs):
         # Obtiene la opción de la URL
@@ -90,6 +458,20 @@ class BannerPrincipalAdmin(admin.ModelAdmin):
         elif opcion == '1':
             for field_name in ['titulo', 'encabezado', 'descripcion', 'foto', 'color_de_fondo']:
                 Form.base_fields[field_name].required = False
+
+
+
+        # # Obtener el idioma actualmente activo
+        # current_language = get_language()
+
+        # # Ciclar a través de todos los campos del formulario
+        # for field_name in list(Form.base_fields):
+        #     if field_name.endswith('_en') or field_name.endswith('_es'):
+        #         # Habilitar solo los campos del idioma actual
+        #         if not field_name.endswith(f'_{current_language}'):
+        #             form.base_fields[field_name].widget = forms.HiddenInput()
+
+
 
         return Form
 

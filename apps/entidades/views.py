@@ -13,6 +13,10 @@ from django.db.models.functions import ExtractMonth, ExtractDay, ExtractYear
 from django.shortcuts import render
 from django.urls import reverse
 from django.http import HttpResponseRedirect
+from django.utils.translation import activate
+from django.utils.translation import get_language
+from django.utils import translation
+
 
 
 def select_banner_form(request):
@@ -63,21 +67,67 @@ def detalle_revista(request, id):
 
     return JsonResponse(revista_data)
 
+# def lista_podcasts(request):
+#     # Obtener el idioma actual
+#     current_language = get_language()
+
+#     # Obtener los podcasts en el idioma actual
+#     podcasts = Podcast.objects.all()
+#     podcasts_data = []
+
+#     for podcast in podcasts:
+#         # Suponiendo que 'titulo' y 'descripcion' son campos traducidos
+#         titulo = getattr(podcast, f'titulo_{current_language}', podcast.titulo)
+#         descripcion = getattr(podcast, f'descripcion_{current_language}', podcast.descripcion)
+
+#         podcasts_data.append({
+#             'id': podcast.id,
+#             'titulo': titulo,
+#             'descripcion': descripcion,
+#             'link_podcast': podcast.link_podcast,
+#             'foto': podcast.get_foto_url()
+#         })
+
+#     return JsonResponse(podcasts_data, safe=False)
 
 
 def lista_podcasts(request):
-    podcasts = Podcast.objects.all().values()
-    podcasts_data = []
-    for contenedor in podcasts:
-        foto_url = ('https://back.dcubamusica.cult.cu/public/'+contenedor.get('imagen_portada') if contenedor.get('imagen_portada') else None)
+    # Obtener el idioma desde la URL o utilizar 'en' como predeterminado
+    lang = request.GET.get('lang', 'en')
 
-        podcasts_data.append({
-            'id': contenedor['id'],
-            'titulo': contenedor['titulo'],
-            'descripcion': contenedor['descripcion'],
-            'link_podcast': contenedor['link_podcast'],
-            'foto': foto_url
-        })
+    # Activar temporalmente el idioma especificado
+    with translation.override(lang):
+        # Obtener el idioma actual activo
+        current_language = translation.get_language()
+
+        # Preparar nombres de campo con sufijo de idioma
+        titulo_field = f'titulo_{current_language}'
+        descripcion_field = f'descripcion_{current_language}'
+
+        # Utilizar .values() especificando los campos de traducción
+        podcasts = Podcast.objects.all().values(
+            'id', 'link_podcast', 'foto', titulo_field, descripcion_field
+        )
+
+        podcasts_data = []
+        for contenedor in podcasts:
+            foto_url = 'https://back.dcubamusica.cult.cu/public/' + contenedor.get('foto', '')
+
+            # Acceder directamente a los campos traducidos
+            titulo = contenedor.get(titulo_field, 'Sin título')  # Fallback si falta la traducción
+            descripcion = contenedor.get(descripcion_field, 'Sin descripción')
+
+            if titulo is None:
+                continue
+
+            podcasts_data.append({
+                'id': contenedor['id'],
+                'titulo': titulo,
+                'descripcion': descripcion,
+                'link_podcast': contenedor['link_podcast'],
+                'foto': foto_url
+            })
+
     return JsonResponse(podcasts_data, safe=False)
 
 def get_banner_principal(request):

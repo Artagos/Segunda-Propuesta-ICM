@@ -57,8 +57,8 @@ class Revista(models.Model):
 
 
 class Podcast(models.Model):
-    titulo = RichTextField(config_name = 'small', blank=False, null=False)
-    descripcion = RichTextField(blank=False, null=False)
+    titulo = RichTextField(config_name = 'small', blank=True, null=True)
+    descripcion = RichTextField(blank=True, null=True)
     link_podcast = models.URLField(blank=True, null=True)  # Puede contener tanto URLs locales como externas
     archivo_local = models.FileField(blank=True, upload_to='podcast/', null=True)
     foto = models.ImageField(upload_to='images/', null=True)
