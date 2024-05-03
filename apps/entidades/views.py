@@ -366,25 +366,38 @@ def get_centros_y_directores(request):
 
     return JsonResponse(contenedores_list, safe=False)
 
-
 def get_premios(request):
-    premios = Premio_Nacional_de_Música.objects.order_by('-año').values()
-    contenedores_list = []
+    lang = request.GET.get('lang', 'es')
+    with translation.override(lang):
+        current_language = translation.get_language()
+        titulo_field = f'titulo_{current_language}'
+        descripcion_field = f'descripcion_{current_language}'
 
-    for contenedor in premios:
-        foto_url = ('https://back.dcubamusica.cult.cu/public/'+contenedor.get('foto') if contenedor.get('foto') else None)
-        contenedores_list.append({
+        premios = Premio_Nacional_de_Música.objects.order_by('-año').values(
+            'id', 'año', 'foto', 'color_de_fondo', 'bibliografía', titulo_field, descripcion_field
+        )
 
-            'id': contenedor['id'],
-            'titulo': contenedor['titulo'],
-            'descripcion': contenedor['descripcion'],
-            'foto': foto_url,
-            'año' : contenedor['año'],
-            'color_de_fondo': contenedor['color_de_fondo'],
-            'bibliografia': contenedor['bibliografía'],
-        })
+        premios_list = []
+        for premio in premios:
+            titulo = premio.get(titulo_field)
+            descripcion = premio.get(descripcion_field, 'Sin descripción')
 
-    return JsonResponse(contenedores_list, safe=False)
+            if titulo is None:
+                continue
+
+            descripcion = premio.get(descripcion_field, 'Sin descripción')
+            premios_list.append({
+                'id': premio['id'],
+                'titulo': titulo,
+                'descripcion': descripcion,
+                'foto': 'https://back.dcubamusica.cult.cu/public/'+premio.get('foto', ''),
+                'año': premio['año'],
+                'color_de_fondo': premio['color_de_fondo'],
+                'bibliografia': premio['bibliografía'],
+            })
+
+    return JsonResponse(premios_list, safe=False)
+
 
 def get_acontecimientos_semana(request):
     fecha = datetime.now()

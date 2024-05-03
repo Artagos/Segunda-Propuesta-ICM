@@ -20,9 +20,24 @@ from django.utils.translation import get_language
 
 
 class RichTextFieldAdmin(admin.ModelAdmin):
+    # def get_titulo_plain(self, obj):
+    #     return strip_tags(obj.titulo)
+    # get_titulo_plain.short_description = 'Título'
+
     def get_titulo_plain(self, obj):
-        return strip_tags(obj.titulo)
-    get_titulo_plain.short_description = 'Título'
+        current_language = get_language()
+        if current_language == 'en':
+            titulo = obj.titulo_en
+        elif current_language == 'es':
+            titulo = obj.titulo_es
+        else:
+            titulo = obj.titulo
+
+        if titulo is None or titulo == '':
+            return None
+        else:
+            return strip_tags(titulo)
+    get_titulo_plain.short_description = 'Titulo'
 
     def get_desc_plain(self, obj):
         return strip_tags(obj.descripcion)
@@ -352,6 +367,15 @@ class RevistaAdmin(RichTextFieldAdmin,TranslationAdmin):
     form = RevistaAdminForm
 
     list_display = ('get_titulo_plain', 'get_desc_plain', 'fecha','pdf', 'imagen_portada')
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        current_language = get_language()
+        if current_language == 'en':
+            return qs.exclude(titulo_en__isnull=True).exclude(titulo_en='')
+        elif current_language == 'es':
+            return qs.exclude(titulo_es__isnull=True).exclude(titulo_es='')
+        else:
+            return qs.exclude(titulo__isnull=True).exclude(titulo='')
     def get_form(self, request, obj=None, **kwargs):
         # Llamar a la implementación base para obtener el formulario inicial
         form = super().get_form(request, obj, **kwargs)
@@ -409,6 +433,15 @@ class PodcastAdminForm(forms.ModelForm):
 class PodcastAdmin(RichTextFieldAdmin,TranslationAdmin):
     form = PodcastAdminForm
     list_display = ('get_titulo_plain', 'get_desc_plain', 'link_podcast', 'archivo_local')
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        current_language = get_language()
+        if current_language == 'en':
+            return qs.exclude(titulo_en__isnull=True).exclude(titulo_en='')
+        elif current_language == 'es':
+            return qs.exclude(titulo_es__isnull=True).exclude(titulo_es='')
+        else:
+            return qs.exclude(titulo__isnull=True).exclude(titulo='')
 
     def get_form(self, request, obj=None, **kwargs):
         # Llamar a la implementación base para obtener el formulario inicial
@@ -431,7 +464,20 @@ class PodcastAdmin(RichTextFieldAdmin,TranslationAdmin):
 class BannerPrincipalAdmin(RichTextFieldAdmin, TranslationAdmin):
     Form = BannerPrincipalAdminForm
     list_display = ('get_titulo_plain', 'encabezado', 'get_desc_plain', 'foto', 'color_de_fondo', 'numero_unico', 'seleccionar_efemeride', 'seleccionar_acontecimiento', 'seleccionar_evento')
+    # def get_list_display(self, request):
+    #     default_fields = [field.name for field in self.model._meta.fields if field.name != 'id']
+    #     return ['get_titulo_plain'] + default_fields
 
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        current_language = get_language()
+        if current_language == 'en':
+            return qs.exclude(titulo_en__isnull=True).exclude(titulo_en='')
+        elif current_language == 'es':
+            return qs.exclude(titulo_es__isnull=True).exclude(titulo_es='')
+        else:
+            return qs.exclude(titulo__isnull=True).exclude(titulo='')
 
     def get_form(self, request, obj=None, **kwargs):
         # Obtiene la opción de la URL
@@ -521,6 +567,15 @@ class IconosAdmin(admin.ModelAdmin):
 class EventoAdmin(RichTextFieldAdmin, TranslationAdmin):
     form = EventoAdminForm
     list_display = ('get_titulo_plain', 'fecha', 'get_desc_plain', 'enlace', 'hora', 'color_de_fondo', 'foto')
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        current_language = get_language()
+        if current_language == 'en':
+            return qs.exclude(titulo_en__isnull=True).exclude(titulo_en='')
+        elif current_language == 'es':
+            return qs.exclude(titulo_es__isnull=True).exclude(titulo_es='')
+        else:
+            return qs.exclude(titulo__isnull=True).exclude(titulo='')
 
     def get_form(self, request, obj=None, **kwargs):
         # Llamar a la implementación base para obtener el formulario inicial
@@ -542,6 +597,15 @@ class EventoAdmin(RichTextFieldAdmin, TranslationAdmin):
 class HistoriaAdmin(RichTextFieldAdmin, TranslationAdmin):
     form = HistoriaDeLaInstitucionAdminForm
     list_display = ('get_titulo_plain', 'get_desc_plain', 'foto', 'color_de_fondo')
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        current_language = get_language()
+        if current_language == 'en':
+            return qs.exclude(titulo_en__isnull=True).exclude(titulo_en='')
+        elif current_language == 'es':
+            return qs.exclude(titulo_es__isnull=True).exclude(titulo_es='')
+        else:
+            return qs.exclude(titulo__isnull=True).exclude(titulo='')
 
     def get_form(self, request, obj=None, **kwargs):
         # Llamar a la implementación base para obtener el formulario inicial
@@ -631,6 +695,15 @@ class DirectoresAdmin(RichTextFieldAdmin,TranslationAdmin):
 class PremioAdmin(RichTextFieldAdmin,TranslationAdmin):
     form = PremioNacionalDeMusicaAdminForm
     list_display = ('get_titulo_plain', 'año', 'get_desc_plain', 'bibliografía', 'foto', 'color_de_fondo')
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        current_language = get_language()
+        if current_language == 'en':
+            return qs.exclude(titulo_en__isnull=True).exclude(titulo_en='')
+        elif current_language == 'es':
+            return qs.exclude(titulo_es__isnull=True).exclude(titulo_es='')
+        else:
+            return qs.exclude(titulo__isnull=True).exclude(titulo='')
 
     def get_form(self, request, obj=None, **kwargs):
         # Llamar a la implementación base para obtener el formulario inicial
@@ -659,6 +732,15 @@ class PremioAdmin(RichTextFieldAdmin,TranslationAdmin):
 class AcontecimientoAdmin(RichTextFieldAdmin, TranslationAdmin):
     form=AcontecimientoAdminForm
     list_display = ('get_titulo_plain', 'fecha', 'get_desc_plain', 'enlace', 'color_de_fondo', 'foto')
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        current_language = get_language()
+        if current_language == 'en':
+            return qs.exclude(titulo_en__isnull=True).exclude(titulo_en='')
+        elif current_language == 'es':
+            return qs.exclude(titulo_es__isnull=True).exclude(titulo_es='')
+        else:
+            return qs.exclude(titulo__isnull=True).exclude(titulo='')
 
     def get_form(self, request, obj=None, **kwargs):
         # Llamar a la implementación base para obtener el formulario inicial
@@ -695,6 +777,15 @@ class AcontecimientoAdmin(RichTextFieldAdmin, TranslationAdmin):
 class MultimediaAdmin(RichTextFieldAdmin,TranslationAdmin):
     form = MultimediaAdminForm
     list_display = ('get_titulo_plain', 'get_desc_plain', 'tipo', 'enlace', 'foto', 'color_de_fondo')
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        current_language = get_language()
+        if current_language == 'en':
+            return qs.exclude(titulo_en__isnull=True).exclude(titulo_en='')
+        elif current_language == 'es':
+            return qs.exclude(titulo_es__isnull=True).exclude(titulo_es='')
+        else:
+            return qs.exclude(titulo__isnull=True).exclude(titulo='')
 
     def get_form(self, request, obj=None, **kwargs):
         # Llamar a la implementación base para obtener el formulario inicial
@@ -716,6 +807,16 @@ class MultimediaAdmin(RichTextFieldAdmin,TranslationAdmin):
 class EfemeridesAdmin(RichTextFieldAdmin, TranslationAdmin):
     form = EfemeridesAdminForm
     list_display = ('get_titulo_plain', 'fecha', 'get_desc_plain', 'color_de_fondo', 'foto')
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        current_language = get_language()
+        if current_language == 'en':
+            return qs.exclude(titulo_en__isnull=True).exclude(titulo_en='')
+        elif current_language == 'es':
+            return qs.exclude(titulo_es__isnull=True).exclude(titulo_es='')
+        else:
+            return qs.exclude(titulo__isnull=True).exclude(titulo='')
+
     def get_form(self, request, obj=None, **kwargs):
         # Llamar a la implementación base para obtener el formulario inicial
         form = super().get_form(request, obj, **kwargs)
@@ -736,6 +837,15 @@ class EfemeridesAdmin(RichTextFieldAdmin, TranslationAdmin):
 class RedesAdmin(RichTextFieldAdmin, TranslationAdmin):
     form = RedesAdminForm
     list_display = ('get_titulo_plain', 'enlace', 'foto')
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        current_language = get_language()
+        if current_language == 'en':
+            return qs.exclude(titulo_en__isnull=True).exclude(titulo_en='')
+        elif current_language == 'es':
+            return qs.exclude(titulo_es__isnull=True).exclude(titulo_es='')
+        else:
+            return qs.exclude(titulo__isnull=True).exclude(titulo='')
 
     def get_form(self, request, obj=None, **kwargs):
         # Llamar a la implementación base para obtener el formulario inicial
