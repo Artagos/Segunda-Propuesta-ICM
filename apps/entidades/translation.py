@@ -49,4 +49,4 @@ class RedesTranslationOptions(TranslationOptions):
 
 @register(BannerPrincipal)
 class BannerPrincipalTranslationOptions(TranslationOptions):
-    fields = ('titulo', 'encabezado', 'descripcion',)
+    fields = ('titulo', 'encabezado', 'descripcion')

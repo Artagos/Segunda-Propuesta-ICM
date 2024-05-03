@@ -428,9 +428,9 @@ class PodcastAdmin(RichTextFieldAdmin,TranslationAdmin):
 
 
 @admin.register(BannerPrincipal)
-class BannerPrincipalAdmin(RichTextFieldAdmin,TranslationAdmin):
-    # form = BannerPrincipalAdminForm
-    list_display = ('titulo', 'encabezado', 'descripcion', 'foto', 'color_de_fondo', 'numero_unico', 'seleccionar_efemeride', 'seleccionar_acontecimiento', 'seleccionar_evento')
+class BannerPrincipalAdmin(RichTextFieldAdmin, TranslationAdmin):
+    Form = BannerPrincipalAdminForm
+    list_display = ('get_titulo_plain', 'encabezado', 'get_desc_plain', 'foto', 'color_de_fondo', 'numero_unico', 'seleccionar_efemeride', 'seleccionar_acontecimiento', 'seleccionar_evento')
 
 
     def get_form(self, request, obj=None, **kwargs):
@@ -460,6 +460,10 @@ class BannerPrincipalAdmin(RichTextFieldAdmin,TranslationAdmin):
 
         Form = super().get_form(request, obj, form=form_class, **kwargs)
 
+        current_language = get_language()
+
+
+
         # Configura las opciones de tipo_contenedor según la opción seleccionada
         Form.base_fields['tipo_contenedor'].choices = tipo_contenedor_choices
 
@@ -468,20 +472,27 @@ class BannerPrincipalAdmin(RichTextFieldAdmin,TranslationAdmin):
             for field_name in ['seleccionar_efemeride', 'seleccionar_acontecimiento', 'seleccionar_evento']:
                 Form.base_fields[field_name].required = False
         elif opcion == '1':
-            for field_name in ['titulo', 'encabezado', 'descripcion', 'foto', 'color_de_fondo']:
-                Form.base_fields[field_name].required = False
+            # for field_name in ['titulo', 'encabezado', 'descripcion', 'foto', 'color_de_fondo']:
+            #     Form.base_fields[field_name].required = False
 
+            for field_name in list(Form.base_fields):
+                if field_name.endswith('_en') or field_name.endswith('_es'):
+                    # Habilitar solo los campos del idioma actual
+                    if not field_name.endswith(f'_{current_language}'):
+                        Form.base_fields[field_name].widget = forms.HiddenInput()
 
+#  # Obtener el idioma actualmente activo
+#         current_language = get_language()
 
-        # # Obtener el idioma actualmente activo
-        # current_language = get_language()
-
-        # # Ciclar a través de todos los campos del formulario
+#         # Ciclar a través de todos los campos del formulario
         # for field_name in list(Form.base_fields):
         #     if field_name.endswith('_en') or field_name.endswith('_es'):
         #         # Habilitar solo los campos del idioma actual
         #         if not field_name.endswith(f'_{current_language}'):
-        #             form.base_fields[field_name].widget = forms.HiddenInput()
+        #             Form.base_fields[field_name].widget = forms.HiddenInput()
+
+
+
 
 
 

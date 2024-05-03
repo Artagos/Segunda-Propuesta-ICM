@@ -1,6 +1,13 @@
 from django import forms
 from .models import BannerPrincipal
 
+from django.contrib.admin import SimpleListFilter
+from django.utils.translation import gettext_lazy as _
+from django.core.exceptions import ValidationError
+from modeltranslation.admin import TranslationAdmin
+from . import translation
+from django.utils.translation import get_language
+
 class OpcionesForm(forms.Form):
     OPCIONES = [
         ('1', 'Agregar información personalizada'),
@@ -13,7 +20,30 @@ class BannerPrincipalForm1(forms.ModelForm):
 
     class Meta:
         model = BannerPrincipal
-        fields = ['tipo_contenedor','titulo', 'descripcion','encabezado' ,'color_de_fondo' ,'foto' ,'numero_unico']
+        fields = ['tipo_contenedor','titulo_en','titulo_es', 'descripcion_en','descripcion_es','encabezado_en','encabezado_es' ,'color_de_fondo' ,'foto' ,'numero_unico']
+
+    def __init__(self, *args, **kwargs):
+        super(BannerPrincipalForm1, self).__init__(*args, **kwargs)
+        # Hacer que los campos de idioma sean obligatorios
+        # Obtener el idioma actual de la sesión
+        current_language = get_language()
+
+        # Ajustar los campos de idioma para ser obligatorios solo si están en el idioma actual
+        for field_name in self.fields:
+            if field_name.endswith(f'_{current_language}'):
+                self.fields[field_name].required = True
+            else:
+                self.fields[field_name].required = False
+        # Cambiar las etiquetas
+        self.fields['titulo_en'].label = 'Title'
+        self.fields['titulo_es'].label = 'Título'
+        # Cambiar las etiquetas
+        self.fields['descripcion_en'].label = 'Description'
+        self.fields['descripcion_es'].label = 'Descripcion'
+
+        self.fields['encabezado_en'].label = 'Subtitle'
+        self.fields['encabezado_es'].label = 'Encabezado'
+
 
     numero_unico = forms.IntegerField(label='Posición del Contenedor')
 
