@@ -85,6 +85,10 @@ class EventoAdminForm(forms.ModelForm):
         self.fields['fecha_es'].label = 'Fecha'
 
 class PremioNacionalDeMusicaAdminForm(forms.ModelForm):
+    current_year = datetime.datetime.now().year
+    year_choices = [(year, year) for year in range(1997, current_year + 1)]
+    año = forms.ChoiceField(choices=year_choices)
+
     class Meta:
         model = Premio_Nacional_de_Música
         fields = '__all__'
@@ -109,8 +113,8 @@ class PremioNacionalDeMusicaAdminForm(forms.ModelForm):
         self.fields['descripcion_en'].label = 'Description'
         self.fields['descripcion_es'].label = 'Descripcion'
 
-        self.fields['bibliografia_en'].label = 'Bibliography'
-        self.fields['bibliografia_es'].label = 'Bibliografía'
+        self.fields['bibliografía_en'].label = 'Bibliography'
+        self.fields['bibliografía_es'].label = 'Bibliografía'
 
 
 
@@ -192,8 +196,8 @@ class CentrosYEmpresasAdminForm(forms.ModelForm):
         self.fields['nombre_en'].label = 'Name'
         self.fields['nombre_es'].label = 'Nombre'
         # Cambiar las etiquetas
-        self.fields['direccion_en'].label = 'Address'
-        self.fields['direccion_es'].label = 'Dirección'
+        self.fields['dirección_en'].label = 'Address'
+        self.fields['dirección_es'].label = 'Dirección'
 
 
 
@@ -203,7 +207,7 @@ class DirectoresAdminForm(forms.ModelForm):
         fields = '__all__'
 
     def __init__(self, *args, **kwargs):
-        super(CentrosYEmpresasAdminForm, self).__init__(*args, **kwargs)
+        super(DirectoresAdminForm, self).__init__(*args, **kwargs)
         # Hacer que los campos de idioma sean obligatorios
         # Obtener el idioma actual de la sesión
         current_language = get_language()
@@ -220,6 +224,16 @@ class DirectoresAdminForm(forms.ModelForm):
         # Cambiar las etiquetas
         self.fields['cargo_en'].label = 'Work Position'
         self.fields['cargo_es'].label = 'Cargo'
+
+    def clean(self):
+        cleaned_data = super().clean()
+        es_ceo = cleaned_data.get('es_ceo')
+        es_cto = cleaned_data.get('es_cto')
+
+        if es_ceo and es_cto:
+            raise ValidationError('Un director no puede ser marcado como CEO y CTO al mismo tiempo.')
+
+        return cleaned_data
 
 class MultimediaAdminForm(forms.ModelForm):
     class Meta:
@@ -299,9 +313,7 @@ class RedesAdminForm(forms.ModelForm):
         # Cambiar las etiquetas
         self.fields['titulo_en'].label = 'Title'
         self.fields['titulo_es'].label = 'Título'
-        # Cambiar las etiquetas
-        self.fields['descripcion_en'].label = 'Description'
-        self.fields['descripcion_es'].label = 'Descripcion'
+
 
 
 class BannerPrincipalAdminForm(forms.ModelForm):
@@ -416,7 +428,7 @@ class PodcastAdmin(RichTextFieldAdmin,TranslationAdmin):
 
 
 @admin.register(BannerPrincipal)
-class BannerPrincipalAdmin(admin.ModelAdmin):
+class BannerPrincipalAdmin(RichTextFieldAdmin,TranslationAdmin):
     # form = BannerPrincipalAdminForm
     list_display = ('titulo', 'encabezado', 'descripcion', 'foto', 'color_de_fondo', 'numero_unico', 'seleccionar_efemeride', 'seleccionar_acontecimiento', 'seleccionar_evento')
 
@@ -495,52 +507,137 @@ class IconosAdmin(admin.ModelAdmin):
     list_display = ('seccion', 'foto')
 
 @admin.register(Evento)
-class EventoAdmin(RichTextFieldAdmin):
+class EventoAdmin(RichTextFieldAdmin, TranslationAdmin):
+    form = EventoAdminForm
     list_display = ('get_titulo_plain', 'fecha', 'get_desc_plain', 'enlace', 'hora', 'color_de_fondo', 'foto')
 
+    def get_form(self, request, obj=None, **kwargs):
+        # Llamar a la implementación base para obtener el formulario inicial
+        form = super().get_form(request, obj, **kwargs)
+
+        # Obtener el idioma actualmente activo
+        current_language = get_language()
+
+        # Ciclar a través de todos los campos del formulario
+        for field_name in list(form.base_fields):
+            if field_name.endswith('_en') or field_name.endswith('_es'):
+                # Habilitar solo los campos del idioma actual
+                if not field_name.endswith(f'_{current_language}'):
+                    form.base_fields[field_name].widget = forms.HiddenInput()
+
+        return form
+
 @admin.register(Historia_de_la_Institución)
-class HistoriaAdmin(RichTextFieldAdmin):
+class HistoriaAdmin(RichTextFieldAdmin, TranslationAdmin):
+    form = HistoriaDeLaInstitucionAdminForm
     list_display = ('get_titulo_plain', 'get_desc_plain', 'foto', 'color_de_fondo')
 
+    def get_form(self, request, obj=None, **kwargs):
+        # Llamar a la implementación base para obtener el formulario inicial
+        form = super().get_form(request, obj, **kwargs)
+
+        # Obtener el idioma actualmente activo
+        current_language = get_language()
+
+        # Ciclar a través de todos los campos del formulario
+        for field_name in list(form.base_fields):
+            if field_name.endswith('_en') or field_name.endswith('_es'):
+                # Habilitar solo los campos del idioma actual
+                if not field_name.endswith(f'_{current_language}'):
+                    form.base_fields[field_name].widget = forms.HiddenInput()
+
+        return form
+
 @admin.register(Centros_y_Empresas)
-class CentrosAdmin(admin.ModelAdmin):
+class CentrosAdmin(RichTextFieldAdmin,TranslationAdmin):
+    form = CentrosYEmpresasAdminForm
     list_display = ('nombre', 'dirección', 'télefono', 'correo')
 
-class DirectoresAdminForm(forms.ModelForm):
-    class Meta:
-        model = Directores
-        fields = '__all__'
+    def get_form(self, request, obj=None, **kwargs):
+        # Llamar a la implementación base para obtener el formulario inicial
+        form = super().get_form(request, obj, **kwargs)
 
-    def clean(self):
-        cleaned_data = super().clean()
-        es_ceo = cleaned_data.get('es_ceo')
-        es_cto = cleaned_data.get('es_cto')
+        # Obtener el idioma actualmente activo
+        current_language = get_language()
 
-        if es_ceo and es_cto:
-            raise ValidationError('Un director no puede ser marcado como CEO y CTO al mismo tiempo.')
+        # Ciclar a través de todos los campos del formulario
+        for field_name in list(form.base_fields):
+            if field_name.endswith('_en') or field_name.endswith('_es'):
+                # Habilitar solo los campos del idioma actual
+                if not field_name.endswith(f'_{current_language}'):
+                    form.base_fields[field_name].widget = forms.HiddenInput()
 
-        return cleaned_data
+        return form
+
+# class DirectoresAdminForm(forms.ModelForm):
+#     class Meta:
+#         model = Directores
+#         fields = '__all__'
+
+#     def clean(self):
+#         cleaned_data = super().clean()
+#         es_ceo = cleaned_data.get('es_ceo')
+#         es_cto = cleaned_data.get('es_cto')
+
+#         if es_ceo and es_cto:
+#             raise ValidationError('Un director no puede ser marcado como CEO y CTO al mismo tiempo.')
+
+#         return cleaned_data
+
+
 
 @admin.register(Directores)
-class DirectoresAdmin(admin.ModelAdmin):
+class DirectoresAdmin(RichTextFieldAdmin,TranslationAdmin):
     form = DirectoresAdminForm
     list_display = ('nombre', 'cargo', 'télefono', 'correo', 'consejo_de_dirección', 'empresa', 'foto', 'es_ceo','es_cto')
 
+    def get_form(self, request, obj=None, **kwargs):
+        # Llamar a la implementación base para obtener el formulario inicial
+        form = super().get_form(request, obj, **kwargs)
 
-class PremioForm(forms.ModelForm):
-    current_year = datetime.datetime.now().year
-    year_choices = [(year, year) for year in range(1997, current_year + 1)]
-    año = forms.ChoiceField(choices=year_choices)
+        # Obtener el idioma actualmente activo
+        current_language = get_language()
 
-    class Meta:
-        model = Premio_Nacional_de_Música
-        fields = '__all__'
+        # Ciclar a través de todos los campos del formulario
+        for field_name in list(form.base_fields):
+            if field_name.endswith('_en') or field_name.endswith('_es'):
+                # Habilitar solo los campos del idioma actual
+                if not field_name.endswith(f'_{current_language}'):
+                    form.base_fields[field_name].widget = forms.HiddenInput()
 
-class PremioAdmin(RichTextFieldAdmin):
-    form = PremioForm
+        return form
+
+
+# class PremioForm(forms.ModelForm):
+#     current_year = datetime.datetime.now().year
+#     year_choices = [(year, year) for year in range(1997, current_year + 1)]
+#     año = forms.ChoiceField(choices=year_choices)
+
+#     class Meta:
+#         model = Premio_Nacional_de_Música
+#         fields = '__all__'
+@admin.register(Premio_Nacional_de_Música)
+class PremioAdmin(RichTextFieldAdmin,TranslationAdmin):
+    form = PremioNacionalDeMusicaAdminForm
     list_display = ('get_titulo_plain', 'año', 'get_desc_plain', 'bibliografía', 'foto', 'color_de_fondo')
 
-admin.site.register(Premio_Nacional_de_Música, PremioAdmin)
+    def get_form(self, request, obj=None, **kwargs):
+        # Llamar a la implementación base para obtener el formulario inicial
+        form = super().get_form(request, obj, **kwargs)
+
+        # Obtener el idioma actualmente activo
+        current_language = get_language()
+
+        # Ciclar a través de todos los campos del formulario
+        for field_name in list(form.base_fields):
+            if field_name.endswith('_en') or field_name.endswith('_es'):
+                # Habilitar solo los campos del idioma actual
+                if not field_name.endswith(f'_{current_language}'):
+                    form.base_fields[field_name].widget = forms.HiddenInput()
+
+        return form
+
+# admin.site.register(Premio_Nacional_de_Música, PremioNacionalDeMusicaAdminForm)
 # @admin.register(Premio_Nacional_de_Música)
 # class PremioAdmin(RichTextFieldAdmin):
 #     list_display = ('get_titulo_plain', 'año', 'get_desc_plain', 'bibliografía', 'foto', 'color_de_fondo')
@@ -548,8 +645,25 @@ admin.site.register(Premio_Nacional_de_Música, PremioAdmin)
 
 
 @admin.register(Acontecimiento)
-class AcontecimientoAdmin(RichTextFieldAdmin):
+class AcontecimientoAdmin(RichTextFieldAdmin, TranslationAdmin):
+    form=AcontecimientoAdminForm
     list_display = ('get_titulo_plain', 'fecha', 'get_desc_plain', 'enlace', 'color_de_fondo', 'foto')
+
+    def get_form(self, request, obj=None, **kwargs):
+        # Llamar a la implementación base para obtener el formulario inicial
+        form = super().get_form(request, obj, **kwargs)
+
+        # Obtener el idioma actualmente activo
+        current_language = get_language()
+
+        # Ciclar a través de todos los campos del formulario
+        for field_name in list(form.base_fields):
+            if field_name.endswith('_en') or field_name.endswith('_es'):
+                # Habilitar solo los campos del idioma actual
+                if not field_name.endswith(f'_{current_language}'):
+                    form.base_fields[field_name].widget = forms.HiddenInput()
+
+        return form
 
 # class MultimediasAdminForm(forms.ModelForm):
 #     class Meta:
@@ -567,14 +681,63 @@ class AcontecimientoAdmin(RichTextFieldAdmin):
 #         return cleaned_data
 
 @admin.register(Multimedia)
-class MultimediaAdmin(RichTextFieldAdmin):
-    # form = MultimediasAdminForm
+class MultimediaAdmin(RichTextFieldAdmin,TranslationAdmin):
+    form = MultimediaAdminForm
     list_display = ('get_titulo_plain', 'get_desc_plain', 'tipo', 'enlace', 'foto', 'color_de_fondo')
 
+    def get_form(self, request, obj=None, **kwargs):
+        # Llamar a la implementación base para obtener el formulario inicial
+        form = super().get_form(request, obj, **kwargs)
+
+        # Obtener el idioma actualmente activo
+        current_language = get_language()
+
+        # Ciclar a través de todos los campos del formulario
+        for field_name in list(form.base_fields):
+            if field_name.endswith('_en') or field_name.endswith('_es'):
+                # Habilitar solo los campos del idioma actual
+                if not field_name.endswith(f'_{current_language}'):
+                    form.base_fields[field_name].widget = forms.HiddenInput()
+
+        return form
+
 @admin.register(Efemerides)
-class EfemeridesAdmin(RichTextFieldAdmin):
+class EfemeridesAdmin(RichTextFieldAdmin, TranslationAdmin):
+    form = EfemeridesAdminForm
     list_display = ('get_titulo_plain', 'fecha', 'get_desc_plain', 'color_de_fondo', 'foto')
+    def get_form(self, request, obj=None, **kwargs):
+        # Llamar a la implementación base para obtener el formulario inicial
+        form = super().get_form(request, obj, **kwargs)
+
+        # Obtener el idioma actualmente activo
+        current_language = get_language()
+
+        # Ciclar a través de todos los campos del formulario
+        for field_name in list(form.base_fields):
+            if field_name.endswith('_en') or field_name.endswith('_es'):
+                # Habilitar solo los campos del idioma actual
+                if not field_name.endswith(f'_{current_language}'):
+                    form.base_fields[field_name].widget = forms.HiddenInput()
+
+        return form
 
 @admin.register(Redes)
-class RedesAdmin(RichTextFieldAdmin):
+class RedesAdmin(RichTextFieldAdmin, TranslationAdmin):
+    form = RedesAdminForm
     list_display = ('get_titulo_plain', 'enlace', 'foto')
+
+    def get_form(self, request, obj=None, **kwargs):
+        # Llamar a la implementación base para obtener el formulario inicial
+        form = super().get_form(request, obj, **kwargs)
+
+        # Obtener el idioma actualmente activo
+        current_language = get_language()
+
+        # Ciclar a través de todos los campos del formulario
+        for field_name in list(form.base_fields):
+            if field_name.endswith('_en') or field_name.endswith('_es'):
+                # Habilitar solo los campos del idioma actual
+                if not field_name.endswith(f'_{current_language}'):
+                    form.base_fields[field_name].widget = forms.HiddenInput()
+
+        return form
