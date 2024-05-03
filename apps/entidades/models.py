@@ -5,6 +5,7 @@ from django.contrib.contenttypes.models import ContentType
 import fitz  # Importa PyMuPDF
 from django.core.files.base import ContentFile
 from ckeditor.fields import RichTextField
+from django.utils.translation import get_language
 
 
 class Revista(models.Model):
@@ -147,27 +148,46 @@ class BannerPrincipal(models.Model):
             return str(self.titulo)
 
     def save(self, *args, **kwargs):
+        current_language = get_language()
         if self.seleccionar_efemeride:
             efemeride = self.seleccionar_efemeride
-            self.titulo = efemeride.titulo
-            self.descripcion = efemeride.descripcion
-            self.foto = efemeride.foto  # Asegúrate de que esto es válido
+            if current_language == 'en':
+                self.titulo_en = efemeride.titulo_en
+                self.descripcion_en = efemeride.descripcion_en
+                self.encabezado_en = efemeride.encabezado_en
+            elif current_language == 'es':
+                self.titulo_es = efemeride.titulo_es
+                self.descripcion_es = efemeride.descripcion_es
+                self.encabezado_es = efemeride.encabezado_es
+            self.foto = efemeride.foto
             self.color_de_fondo = efemeride.color_de_fondo
-            self.encabezado = efemeride.encabezado
+
         elif self.seleccionar_acontecimiento:
             acontecimiento = self.seleccionar_acontecimiento
-            self.titulo = acontecimiento.titulo
-            self.descripcion = acontecimiento.descripcion
-            self.foto = acontecimiento.foto  # Asegúrate de que esto es válido
+            if current_language == 'en':
+                self.titulo_en = acontecimiento.titulo_en
+                self.descripcion_en = acontecimiento.descripcion_en
+                self.encabezado_en = acontecimiento.encabezado_en
+            elif current_language == 'es':
+                self.titulo_es = acontecimiento.titulo_es
+                self.descripcion_es = acontecimiento.descripcion_es
+                self.encabezado_es = acontecimiento.encabezado_es
+            self.foto = acontecimiento.foto
             self.color_de_fondo = acontecimiento.color_de_fondo
-            self.encabezado = acontecimiento.encabezado
+
         elif self.seleccionar_evento:
             evento = self.seleccionar_evento
-            self.titulo = evento.titulo
-            self.descripcion = evento.descripcion
-            self.foto = evento.foto  # Asegúrate de que esto es válido
+            if current_language == 'en':
+                self.titulo_en = evento.titulo_en
+                self.descripcion_en = evento.descripcion_en
+                self.encabezado_en = evento.encabezado_en
+            elif current_language == 'es':
+                self.titulo_es = evento.titulo_es
+                self.descripcion_es = evento.descripcion_es
+                self.encabezado_es = evento.encabezado_es
+            self.foto = evento.foto
             self.color_de_fondo = evento.color_de_fondo
-            self.encabezado = evento.encabezado
+
 
         super().save(*args, **kwargs)
 
