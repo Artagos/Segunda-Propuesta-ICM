@@ -6,17 +6,99 @@ import fitz  # Importa PyMuPDF
 from django.core.files.base import ContentFile
 from ckeditor.fields import RichTextField
 from django.utils.translation import get_language
+from django.core.files.storage import default_storage
+from django.conf import settings
+from django.utils.text import slugify
+import os
+
+
+
+
+
+class ImageManagementMixin(models.Model):
+    """
+    Mixin para manejar la verificación y reutilización de archivos de imágenes existentes.
+    """
+    class Meta:
+        abstract = True
+
+    def save(self, *args, **kwargs):
+        # Este método asume que el campo de la imagen se llama 'imagen_portada'
+        if hasattr(self, 'foto') and self.foto:
+            # Construye la ruta completa donde se guardaría la imagen
+            self.foto.name = self.normalize_file_name(self.foto.name, 'images/')
+            file_path = self.get_upload_path(self.foto.name)
+
+            if default_storage.exists(file_path):
+
+                self.foto = file_path
+            else:
+
+                super(ImageManagementMixin, self).save(*args, **kwargs)
+
+        # Guarda la instancia del modelo
+        super(ImageManagementMixin, self).save(*args, **kwargs)
+
+    def normalize_file_name(self, filename, path):
+        """
+        Normalize and possibly clean up file names to match how Django would handle them on upload.
+        """
+        # You might want to further enhance this normalization
+        base, ext = os.path.splitext(filename)
+        return slugify(base) + ext.lower()
+
+    def get_upload_path(self, filename):
+        """
+        Construye la ruta de carga basada en el directorio 'images/'
+        """
+        return os.path.join('images/', filename)
 
 
 class Revista(models.Model):
     titulo = RichTextField(config_name='small', blank=False, null=False)
     descripcion = RichTextField(blank=False, null=False)
     fecha = models.DateField(blank=False, null=False)
-    pdf = models.FileField(upload_to='pdfs/', blank=False, null=False)
-    imagen_portada = models.ImageField(upload_to='images/',blank=False, null=False)
+    pdf = models.FileField(upload_to='pdfs/', blank=False, null=False,max_length=500)
+    imagen_portada = models.ImageField(upload_to='images/',blank=False, null=False,max_length=500)
 
     def __str__(self):
         return str(self.titulo)
+
+    def save(self, *args, **kwargs):
+        self.imagen_portada.name = self.normalize_file_name(self.imagen_portada.name, 'images/')
+        if self.imagen_portada and not self.imagen_portada_exists():
+            super(Revista, self).save()
+        else:
+            self.imagen_portada = self.get_upload_path(self.imagen_portada.name, 'images/')  # Avoid saving the file again
+
+        self.pdf.name = self.normalize_file_name(self.pdf.name, 'pdfs/')
+        if self.pdf and not self.pdf_exists():
+            super(Revista, self).save()
+        else:
+            self.pdf = self.get_upload_path(self.pdf.name, 'pdfs/')  # Avoid saving the file again
+
+        # Always save the instance even if the files are not updated
+        super(Revista, self).save(*args, **kwargs)
+
+    def normalize_file_name(self, filename, path):
+        """
+        Normalize and possibly clean up file names to match how Django would handle them on upload.
+        """
+        # You might want to further enhance this normalization
+        base, ext = os.path.splitext(filename)
+        return slugify(base) + ext.lower()
+
+    def imagen_portada_exists(self):
+        return default_storage.exists(self.get_upload_path(self.imagen_portada.name, 'images/'))
+
+    def pdf_exists(self):
+        return default_storage.exists(self.get_upload_path(self.pdf.name, 'pdfs/'))
+
+    def get_upload_path(self, filename, path):
+        """
+        Construct the full file path within the media directory
+        """
+        return os.path.join(path, filename)
 
     # def save(self, *args, **kwargs):
     #     if self.pk:
@@ -61,13 +143,44 @@ class Podcast(models.Model):
     titulo = RichTextField(config_name = 'small', blank=True, null=True)
     descripcion = RichTextField(blank=True, null=True)
     link_podcast = models.URLField(blank=True, null=True)  # Puede contener tanto URLs locales como externas
-    archivo_local = models.FileField(blank=True, upload_to='podcast/', null=True)
-    foto = models.ImageField(upload_to='images/', null=True)
+    archivo_local = models.FileField(upload_to='podcast/', blank=False, null=False,max_length=500)
+    foto = models.ImageField(upload_to='images/',blank=False, null=False,max_length=500)
 
-    def get_foto_url(self):
-        if self.foto and hasattr(self.foto, 'url'):
-            return 'https://back.dcubamusica.cult.cu/public/' + self.foto.url
-        return None
+    def save(self, *args, **kwargs):
+        # Check and set for image
+        if self.foto:
+            self.foto.name = self.normalize_file_name(self.foto.name, 'images/')
+            if not self.file_exists(self.foto.name, 'images/'):
+                super(Podcast, self).save()
+            else:
+                self.foto = self.get_upload_path(self.foto.name, 'images/')
+
+        # Check and set for mp3
+        if self.archivo_local:
+            self.archivo_local.name = self.normalize_file_name(self.archivo_local.name, 'podcast/')
+            if not self.file_exists(self.archivo_local.name, 'podcast/'):
+                super(Podcast, self).save()
+            else:
+                self.archivo_local = self.get_upload_path(self.archivo_local.name, 'podcast/')
+
+        # Always save the instance even if the files are not updated
+        super(Podcast, self).save(*args, **kwargs)
+
+    def file_exists(self, filename, path):
+        full_path = self.get_upload_path(filename, path)
+        return default_storage.exists(full_path)
+
+    def get_upload_path(self, filename, path):
+        return os.path.join(path, filename)
+
+    def normalize_file_name(self, filename, path):
+        """
+        Normalize and possibly clean up file names to match how Django would handle them on upload.
+        """
+        # You might want to further enhance this normalization
+        base, ext = os.path.splitext(filename)
+        return slugify(base) + ext.lower()
+
 
     def __str__(self):
         return str(self.titulo)
@@ -76,18 +189,18 @@ class Podcast(models.Model):
 # class ContenedorConFondo (models.Model):
 #     titulo = models.CharField(max_length=50)
 #     descripcion = models.CharField(max_length=500)
-#     foto = models.FileField(upload_to='images/', max_length=100)
+#     foto = models.FileField(upload_to='images/', max_length=500)
 
 # class ContenedorConFondoSoloTitulo (models.Model):
 #     titulo = models.CharField(max_length=50)
-#     foto = models.FileField(upload_to='images/', max_length=100)
+#     foto = models.FileField(upload_to='images/', max_length=500)
 
 # class ContenedorICM (models.Model):
 #     titulo = models.CharField(max_length=50)
 #     encabezado = models.CharField(max_length=50)
 #     descripcion = models.CharField(max_length=500)
 #     enlace = models.URLField(max_length=200)
-#     foto = models.FileField(upload_to='images/', max_length=100)
+#     foto = models.FileField(upload_to='images/', max_length=500)
 #     color_de_fondo = models.CharField(max_length=7)
 #     color_de_letra = models.CharField(max_length=7)
 #     color_boton = models.CharField(max_length=7)
@@ -124,12 +237,10 @@ class BannerPrincipal(models.Model):
     titulo = RichTextField(config_name = 'small', blank=True, null=True)
     encabezado = RichTextField(config_name = 'small', blank=True, null=True)
     descripcion = RichTextField(blank=True, null=True)
-    foto = models.FileField(upload_to='images/', null=True)
+    foto = models.FileField(upload_to='images/', null=True, max_length=500)
 
-    def get_foto_url(self):
-        if self.foto and hasattr(self.foto, 'url'):
-            return 'https://back.dcubamusica.cult.cu/public/' + self.foto.url
-        return None
+
+
 
 
 
@@ -188,14 +299,45 @@ class BannerPrincipal(models.Model):
             self.foto = evento.foto
             self.color_de_fondo = evento.color_de_fondo
 
+        else:
+            self.foto.name = self.normalize_file_name(self.foto.name, 'images/')
+            if self.foto and not self.imagen_portada_exists():
+                super(BannerPrincipal, self).save()
+            else:
+                self.foto = self.get_upload_path(self.foto.name, 'images/')  # Avoid saving the file again
 
-        super().save(*args, **kwargs)
+
+
+            # Always save the instance even if the files are not updated
+            super(BannerPrincipal, self).save(*args, **kwargs)
+
+    def imagen_portada_exists(self):
+        return default_storage.exists(self.get_upload_path(self.foto.name, 'images/'))
+
+    def get_upload_path(self, filename, path):
+        """
+        Construct the full file path within the media directory
+        """
+        return os.path.join(path, filename)
+
+    def normalize_file_name(self, filename, path):
+        """
+        Normalize and possibly clean up file names to match how Django would handle them on upload.
+        """
+        # You might want to further enhance this normalization
+        base, ext = os.path.splitext(filename)
+        return slugify(base) + ext.lower()
+
+
+
+
+        # super().save(*args, **kwargs)
 
 
 
 
 
-class Iconos (models.Model):
+class Iconos (ImageManagementMixin):
     class Meta:
         verbose_name_plural = "Iconos"
     ICON_CHOICES = [
@@ -207,18 +349,14 @@ class Iconos (models.Model):
     ]
 
     seccion = models.CharField(max_length=50, choices=ICON_CHOICES, blank=False, null=False)
-    foto = models.FileField(upload_to='logos/', blank=False, null=False)
+    foto = models.FileField(upload_to='logos/', blank=False, null=False, max_length=500)
 
-    def get_foto_url(self):
-        if self.foto and hasattr(self.foto, 'url'):
-            return 'https://back.dcubamusica.cult.cu/public/' + self.foto.url
-        return None
 
     def __str__(self):
         return self.seccion
 
 
-class Evento (models.Model):
+class Evento (ImageManagementMixin):
     class Meta:
         verbose_name_plural = "Eventos"
 
@@ -239,7 +377,7 @@ class Evento (models.Model):
         ('ed8500', 'naranja'),
     ]
     color_de_fondo = models.CharField(max_length=7,choices=TEXT_COLOR_CHOICES, default='#ffffff', null=True)
-    foto = models.FileField(upload_to='images/', max_length=100, null=True)
+    foto = models.FileField(upload_to='images/', max_length=500, null=True)
 
     def get_foto_url(objeto):
         """
@@ -255,12 +393,12 @@ class Evento (models.Model):
         return str(self.titulo)
 
 
-class Historia_de_la_Institución (models.Model):
+class Historia_de_la_Institución (ImageManagementMixin):
     class Meta:
         verbose_name_plural = "Historia de la Institución"
     titulo = RichTextField(config_name = 'small', blank=False, null=False)
     descripcion = RichTextField(blank=False, null=False)
-    foto = models.FileField(upload_to='images/', max_length=100,blank=True, null=True)
+    foto = models.FileField(upload_to='images/', max_length=500,blank=True, null=True)
 
     TEXT_COLOR_CHOICES = [
         ('#000000', 'negro'),
@@ -288,7 +426,7 @@ class Centros_y_Empresas (models.Model):
     nombre = RichTextField(config_name = 'small', blank=False, null=False)
     dirección = models.CharField(max_length=500,blank=False, null=False)
     télefono = models.CharField(max_length=20,blank=False, null=False)
-    correo = models.EmailField(max_length=100,blank=False, null=False)
+    correo = models.EmailField(max_length=500,blank=False, null=False)
 
     TEXT_COLOR_CHOICES = [
         ('#000000', 'negro'),
@@ -303,13 +441,13 @@ class Centros_y_Empresas (models.Model):
     def __str__(self):
         return str(self.nombre)
 
-class Directores(models.Model):
+class Directores(ImageManagementMixin):
     class Meta:
         verbose_name_plural = "Directores"
 
     nombre = RichTextField(config_name='small', blank=False, null=False)
     foto = models.FileField(upload_to='images/', default='images/blank.webp', blank=True,null=True)
-    cargo = models.CharField(max_length=100, blank=False, null=False)
+    cargo = models.CharField(max_length=500, blank=False, null=False)
     télefono = models.CharField(max_length=20, blank=False, null=False)  # Corregido 'télefono' por 'telefono'
     correo = models.EmailField(blank=False, null=False)
     consejo_de_dirección = models.BooleanField(default=False, blank=True,null=True)  # Cambiado 'null=False' por 'default=False'
@@ -323,14 +461,14 @@ class Directores(models.Model):
     def __str__(self):
         return str(self.nombre)
 
-class Premio_Nacional_de_Música (models.Model):
+class Premio_Nacional_de_Música (ImageManagementMixin):
     class Meta:
         verbose_name_plural = "Premio Nacional de Música"
     titulo = RichTextField(config_name = 'small', blank=False, null=False)
     año = models.IntegerField(blank = False, null=False)
     descripcion = RichTextField(blank=False, null=False)
     bibliografía = RichTextField(config_name = 'small', blank=True, null=True)
-    foto = models.FileField(upload_to='images/', max_length=100, blank=True, null=True)
+    foto = models.FileField(upload_to='images/', max_length=500, blank=True, null=True)
 
 
     TEXT_COLOR_CHOICES = [
@@ -352,7 +490,7 @@ class Premio_Nacional_de_Música (models.Model):
     def __str__(self):
         return str(self.titulo)
 
-class Acontecimiento (models.Model):
+class Acontecimiento (ImageManagementMixin):
     class Meta:
         verbose_name_plural = "Acontecimientos"
 
@@ -372,7 +510,7 @@ class Acontecimiento (models.Model):
         ('ed8500', 'naranja'),
     ]
     color_de_fondo = models.CharField(max_length=7,choices=TEXT_COLOR_CHOICES, default='#ffffff', null=True)
-    foto = models.FileField(upload_to='images/', max_length=100, blank=False, null=False)
+    foto = models.FileField(upload_to='images/', max_length=500, blank=False, null=False)
 
     def get_foto_url(self):
         if self.foto and hasattr(self.foto, 'url'):
@@ -382,16 +520,16 @@ class Acontecimiento (models.Model):
         return str(self.titulo)
 
 
-class Multimedia (models.Model):
+class Multimedia (ImageManagementMixin):
     class Meta:
         verbose_name_plural = "Multimedias"
     titulo = RichTextField(config_name = 'small', blank=False, null=False)
 
     descripcion = RichTextField(blank=False, null=False)
-    tipo = models.CharField(max_length=100)
+    tipo = models.CharField(max_length=500)
     enlace = models.URLField(max_length=200,blank=True, null=True)
     archivo = models.FileField(upload_to='multimedias/', blank=True, null=True)
-    foto = models.FileField(upload_to='multimedias/', max_length=100,blank=True, null=True)
+    foto = models.FileField(upload_to='multimedias/', max_length=500,blank=True, null=True)
 
     def get_foto_url(self):
         if self.foto and hasattr(self.foto, 'url'):
@@ -413,7 +551,7 @@ class Multimedia (models.Model):
     def __str__(self):
         return str(self.titulo)
 
-class Efemerides (models.Model):
+class Efemerides (ImageManagementMixin):
     class Meta:
         verbose_name_plural = "Efemérides"
     titulo = RichTextField(config_name = 'small', blank=False, null=False)
@@ -431,7 +569,7 @@ class Efemerides (models.Model):
         ('ed8500', 'naranja'),
     ]
     color_de_fondo = models.CharField(max_length=7,choices=TEXT_COLOR_CHOICES, default='#ffffff', null=True)
-    foto = models.FileField(upload_to='images/', max_length=100, blank=True, null=True)
+    foto = models.FileField(upload_to='images/', max_length=500, blank=True, null=True)
 
     def get_foto_url(self):
         if self.foto and hasattr(self.foto, 'url'):
@@ -443,12 +581,12 @@ class Efemerides (models.Model):
 
 
 
-class Redes (models.Model):
+class Redes (ImageManagementMixin):
     class Meta:
         verbose_name_plural = "Redes"
     titulo = RichTextField(config_name = 'small', blank=False, null=False)
     enlace = models.URLField(max_length=200,blank=True, null=True)
-    foto = models.FileField(upload_to='redes/', max_length=100,blank=True, null=True)
+    foto = models.FileField(upload_to='redes/', max_length=500,blank=True, null=True)
 
 
     def __str__(self):

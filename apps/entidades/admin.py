@@ -432,7 +432,7 @@ class PodcastAdminForm(forms.ModelForm):
 @admin.register(Podcast)
 class PodcastAdmin(RichTextFieldAdmin,TranslationAdmin):
     form = PodcastAdminForm
-    list_display = ('get_titulo_plain', 'get_desc_plain', 'link_podcast', 'archivo_local')
+    list_display = ('get_titulo_plain', 'get_desc_plain', 'link_podcast', 'archivo_local', 'foto')
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         current_language = get_language()
