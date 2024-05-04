@@ -433,7 +433,7 @@ def get_centros_y_directores(request):
             empresa_nombre = contenedor.get('empresa_id')
             foto_url = f'https://back.dcubamusica.cult.cu/public/{contenedor.get("foto")}' if contenedor.get('foto') else None
 
-            if titulo is None:
+            if nombre is None:
                 continue
 
             contenedores_list.append({
@@ -564,21 +564,19 @@ def get_centros_contactos(request):
         direccion_field = f'dirección_{current_language}'
 
         centros = Centros_y_Empresas.objects.all().values(
-            'id', 'télefono', 'foto', 'correo', nombre_field, direccion_field
+            'id', 'télefono', 'correo', nombre_field, direccion_field
         )
         contenedores_list = []
         for contenedor in centros:
             nombre = contenedor.get(nombre_field, 'Nombre no disponible')
             direccion = contenedor.get(direccion_field, 'Dirección no disponible')
-            foto_url = 'https://back.dcubamusica.cult.cu/public/' + contenedor.get('foto', '')
-            if titulo is None:
+            if nombre is None:
                 continue
             contenedores_list.append({
                 'id': contenedor['id'],
                 'nombre': nombre,
                 'telefono': contenedor['télefono'],
                 'direccion': direccion,
-                'foto': foto_url,
                 'correo': contenedor['correo']
             })
 
