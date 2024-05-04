@@ -13,6 +13,10 @@ from django.db.models.functions import ExtractMonth, ExtractDay, ExtractYear
 from django.shortcuts import render
 from django.urls import reverse
 from django.http import HttpResponseRedirect
+from django.utils.translation import activate
+from django.utils.translation import get_language
+from django.utils import translation
+
 
 
 def select_banner_form(request):
@@ -23,22 +27,32 @@ def select_banner_form(request):
     return render(request, 'select_form.html')
 
 def lista_revistas(request):
-    revistas = Revista.objects.all().order_by('-fecha').values()
-    contenedores_list = []
+    lang = request.GET.get('lang', 'es')
+    with translation.override(lang):
+        current_language = translation.get_language()
+        titulo_field = f'titulo_{current_language}'
+        descripcion_field = f'descripcion_{current_language}'
 
-    for contenedor in revistas:
-        foto_url = ('https://back.dcubamusica.cult.cu/public/'+contenedor.get('imagen_portada') if contenedor.get('imagen_portada') else None)
-        pdfurl = ('https://back.dcubamusica.cult.cu/public/'+contenedor.get('pdf') if contenedor.get('pdf') else None)
+        revistas = Revista.objects.all().order_by('-fecha').values(
+            'id', titulo_field, descripcion_field, 'imagen_portada', 'pdf'
+        )
+        contenedores_list = []
+        for contenedor in revistas:
+            foto_url = 'https://back.dcubamusica.cult.cu/public/' + contenedor.get('imagen_portada', '')
+            pdf_url = 'https://back.dcubamusica.cult.cu/public/' + contenedor.get('pdf', '')
+            titulo = contenedor.get(titulo_field, 'Sin título')  # Fallback si falta la traducción
+            descripcion = contenedor.get(descripcion_field, 'Sin descripción')
 
-        contenedores_list.append({
-            'id': contenedor['id'],
-            'titulo': contenedor['titulo'],
-            'descripcion': contenedor['descripcion'],
-            'foto': foto_url,
-            'pdf': pdfurl,
-        })
-
-    return JsonResponse(contenedores_list, safe=False)
+            if titulo is None:
+                continue
+            contenedores_list.append({
+                'id': contenedor['id'],
+                'titulo': titulo,
+                'descripcion': descripcion,
+                'foto': foto_url,
+                'pdf': pdf_url,
+            })
+        return JsonResponse(contenedores_list, safe=False)
 
 
 def detalle_revista(request, id):
@@ -63,93 +77,115 @@ def detalle_revista(request, id):
 
     return JsonResponse(revista_data)
 
+# def lista_podcasts(request):
+#     # Obtener el idioma actual
+#     current_language = get_language()
+
+#     # Obtener los podcasts en el idioma actual
+#     podcasts = Podcast.objects.all()
+#     podcasts_data = []
+
+#     for podcast in podcasts:
+#         # Suponiendo que 'titulo' y 'descripcion' son campos traducidos
+#         titulo = getattr(podcast, f'titulo_{current_language}', podcast.titulo)
+#         descripcion = getattr(podcast, f'descripcion_{current_language}', podcast.descripcion)
+
+#         podcasts_data.append({
+#             'id': podcast.id,
+#             'titulo': titulo,
+#             'descripcion': descripcion,
+#             'link_podcast': podcast.link_podcast,
+#             'foto': podcast.get_foto_url()
+#         })
+
+#     return JsonResponse(podcasts_data, safe=False)
 
 
 def lista_podcasts(request):
-    podcasts = Podcast.objects.all().values()
-    podcasts_data = []
-    for contenedor in podcasts:
-        foto_url = ('https://back.dcubamusica.cult.cu/public/'+contenedor.get('imagen_portada') if contenedor.get('imagen_portada') else None)
+    # Obtener el idioma desde la URL o utilizar 'en' como predeterminado
+    lang = request.GET.get('lang', 'en')
 
-        podcasts_data.append({
-            'id': contenedor['id'],
-            'titulo': contenedor['titulo'],
-            'descripcion': contenedor['descripcion'],
-            'link_podcast': contenedor['link_podcast'],
-            'foto': foto_url
-        })
+    # Activar temporalmente el idioma especificado
+    with translation.override(lang):
+        # Obtener el idioma actual activo
+        current_language = translation.get_language()
+
+        # Preparar nombres de campo con sufijo de idioma
+        titulo_field = f'titulo_{current_language}'
+        descripcion_field = f'descripcion_{current_language}'
+
+        # Utilizar .values() especificando los campos de traducción
+        podcasts = Podcast.objects.all().values(
+            'id', 'link_podcast', 'foto', titulo_field, descripcion_field
+        )
+
+        podcasts_data = []
+        for contenedor in podcasts:
+            foto_url = 'https://back.dcubamusica.cult.cu/public/' + contenedor.get('foto', '')
+
+            # Acceder directamente a los campos traducidos
+            titulo = contenedor.get(titulo_field, 'Sin título')  # Fallback si falta la traducción
+            descripcion = contenedor.get(descripcion_field, 'Sin descripción')
+
+            if titulo is None:
+                continue
+
+            podcasts_data.append({
+                'id': contenedor['id'],
+                'titulo': titulo,
+                'descripcion': descripcion,
+                'link_podcast': contenedor['link_podcast'],
+                'foto': foto_url
+            })
+
     return JsonResponse(podcasts_data, safe=False)
 
 def get_banner_principal(request):
+    # Obtener el idioma desde la URL o utilizar 'es' como predeterminado
+    lang = request.GET.get('lang', 'es')
 
-    for contenedor in BannerPrincipal.objects.all():
-        contenedor.save()
+    # Activar temporalmente el idioma especificado
+    with translation.override(lang):
+        current_language = translation.get_language()
+        titulo_field = f'titulo_{current_language}'
+        descripcion_field = f'descripcion_{current_language}'
+        encabezado_field = f'encabezado_{current_language}'
 
-    contenedores = BannerPrincipal.objects.all().order_by('numero_unico').values()
-    contenedores_list = []
+        # Actualizar todas las instancias para asegurar que los datos son actuales
+        for contenedor in BannerPrincipal.objects.all():
+            contenedor.save()
 
-    for contenedor in contenedores:
+        # Obtener los banners
+        banners = BannerPrincipal.objects.all().order_by('numero_unico').values(
+            'id', 'tipo_contenedor', 'seleccionar_efemeride_id', 'seleccionar_acontecimiento_id',
+            'seleccionar_evento_id', titulo_field, descripcion_field, encabezado_field,
+            'foto', 'color_de_fondo', 'numero_unico'
+        )
 
-        foto_url = ('https://back.dcubamusica.cult.cu/public/'+contenedor.get('foto') if contenedor.get('foto') else None)
+        banners_data = []
+        for banner in banners:
+            foto_url = 'https://back.dcubamusica.cult.cu/public/' + banner.get('foto', '')
+            titulo = banner.get(titulo_field, 'Sin título')  # Fallback si falta la traducción
+            descripcion = banner.get(descripcion_field, 'Sin descripción')
+            encabezado = banner.get(encabezado_field, 'Sin encabezado')
 
-        contenedor_dict = {
-            'id': contenedor['id'],
-            'tipo_contenedor': contenedor['tipo_contenedor'],
-            # 'seleccionar_efemeride': contenedor['seleccionar_efemeride'] ,
-            # 'seleccionar_acontecimiento': contenedor['seleccionar_acontecimiento'] ,
-            # 'seleccionar_evento': contenedor['seleccionar_evento'],
+            if titulo is None:
+                continue
 
-            # 'seleccionar_efemeride': contenedor.get('seleccionar_efemeride'),  # Usa .get() para evitar KeyError
-            # 'seleccionar_acontecimiento': contenedor.get('seleccionar_acontecimiento'),  # Usa .get()
-            # 'seleccionar_evento': contenedor.get('seleccionar_evento'),  # Usa .get()
+            banner_dict = {
+                'id': banner['id'],
+                'tipo_contenedor': banner['tipo_contenedor'],
+                'titulo':titulo,
+                'descripcion': descripcion,
+                'encabezado': encabezado,
+                'foto': foto_url,
+                'color_de_fondo': banner['color_de_fondo'],
+                'numero_unico': banner['numero_unico'],
+            }
+            banners_data.append(banner_dict)
 
-            'titulo': contenedor['titulo'],
-            'descripcion': contenedor['descripcion'],
-            'foto': foto_url,
-            'color_de_fondo': contenedor['color_de_fondo'],
-            'encabezado': contenedor['encabezado'],
-            'numero_unico': contenedor['numero_unico'],
-        }
+        return JsonResponse(banners_data, safe=False)
 
-        # if contenedor['tipo_contenedor'] == 'Efemeride':
-
-        #     efemeride = Efemerides.objects.get(id=contenedor['seleccionar_efemeride_id'])
-        #     foto_url = ('https://back.dcubamusica.cult.cu/public/'+efemeride.get('foto') if efemeride.get('foto') else None)
-
-
-        #     contenedor_dict['titulo'] = efemeride.titulo
-        #     contenedor_dict['descripcion'] = efemeride.descripcion
-        #     contenedor_dict['foto'] = foto_url
-        #     contenedor_dict['color_de_fondo'] = efemeride.color_de_fondo
-        #     contenedor_dict['encabezado'] = efemeride.encabezado
-
-        # elif contenedor['tipo_contenedor'] == 'Acontecimiento':
-        #     acontecimiento = Acontecimiento.objects.get(id=contenedor['seleccionar_acontecimiento_id']).value()
-        #     foto_url = ('https://back.dcubamusica.cult.cu/public/'+acontecimiento.get('foto') if acontecimiento.get('foto') else None)
-
-        #     contenedor_dict['titulo'] = acontecimiento.titulo
-        #     contenedor_dict['descripcion'] = acontecimiento.descripcion
-        #     contenedor_dict['foto'] = foto_url
-        #     contenedor_dict['color_de_fondo'] = acontecimiento.color_de_fondo
-        #     contenedor_dict['encabezado'] = acontecimiento.encabezado
-        #     contenedor_dict['enlace'] = evento.enlace
-
-        # elif contenedor['tipo_contenedor'] =='Evento':
-        #     evento = Evento.objects.get(id=contenedor['seleccionar_evento_id']).value()
-        #     foto_url = ('https://back.dcubamusica.cult.cu/public/'+evento.get('foto') if evento.get('foto') else None)
-
-        #     contenedor_dict['titulo'] = evento.titulo
-        #     contenedor_dict['descripcion'] = evento.descripcion
-        #     contenedor_dict['foto'] = foto_url
-        #     contenedor_dict['color_de_fondo'] = evento.color_de_fondo
-        #     contenedor_dict['encabezado'] = evento.encabezado
-        #     contenedor_dict['enlace'] = evento.enlace
-        #     contenedor_dict['hora'] = evento.hora
-
-        contenedores_list.append(contenedor_dict)
-
-
-    return JsonResponse(contenedores_list, safe=False)
 
 def get_iconos(request):
 
@@ -176,315 +212,528 @@ def get_iconos(request):
 
 
 def get_all_efem(request):
-    contenedores = Efemerides.objects.all().order_by().values()
-    contenedores_list = []
+    lang = request.GET.get('lang', 'es')
+    with translation.override(lang):
+        current_language = translation.get_language()
+        titulo_field = f'titulo_{current_language}'
+        descripcion_field = f'descripcion_{current_language}'
+        encabezado_field = f'encabezado_{current_language}'
 
 
+        efemerides = Efemerides.objects.all().order_by().values(
+            'id', 'fecha', 'foto', 'color_de_fondo', encabezado_field, titulo_field, descripcion_field
+        )
 
-    for contenedor in contenedores:
-        foto_url = ('https://back.dcubamusica.cult.cu/public/'+contenedor.get('foto') if contenedor.get('foto') else None)
+        efemerides_list = []
+        for efemeride in efemerides:
+            titulo = efemeride.get(titulo_field, 'Sin título')
+            descripcion = efemeride.get(descripcion_field, 'Sin descripción')
+            if titulo is None:
+                continue
 
-        contenedores_list.append({
-            'id': contenedor['id'],
-            'titulo': contenedor['titulo'],
-            'fecha': contenedor['fecha'],
-            'descripcion': contenedor['descripcion'],
-            'foto': foto_url,
-            'color_de_fondo': contenedor['color_de_fondo'],
-            'encabezado': contenedor['encabezado'],
+            efemerides_list.append({
+                'id': efemeride['id'],
+                'titulo': titulo,
+                'fecha': efemeride['fecha'],
+                'descripcion': descripcion,
+                'foto': 'https://back.dcubamusica.cult.cu/public/' + efemeride.get('foto', ''),
+                'color_de_fondo': efemeride['color_de_fondo'],
+                'encabezado': efemeride.get(encabezado_field, '')
+            })
 
-        })
-
-    return JsonResponse(contenedores_list, safe=False)
+    return JsonResponse(efemerides_list, safe=False)
 
 
 
 def get_efem_by_date(request, day, month):
-    contenedores = Efemerides.objects.filter(fecha__day=day, fecha__month=month).order_by('fecha').values()
-    contenedores_list = []
+    lang = request.GET.get('lang', 'es')
+    with translation.override(lang):
+        current_language = translation.get_language()
+        titulo_field = f'titulo_{current_language}'
+        descripcion_field = f'descripcion_{current_language}'
+        encabezado_field = f'encabezado_{current_language}'
 
-    for contenedor in contenedores:
 
-        foto_url = ('https://back.dcubamusica.cult.cu/public/'+contenedor.get('foto') if contenedor.get('foto') else None)
+        efemerides = Efemerides.objects.filter(fecha__day=day, fecha__month=month).order_by('fecha').values(
+            'id', 'fecha', 'foto', 'color_de_fondo', encabezado_field, titulo_field, descripcion_field
+        )
 
-        contenedores_list.append({
-            'id': contenedor['id'],
-            'titulo': contenedor['titulo'],
-            'fecha': contenedor['fecha'],
-            'descripcion': contenedor['descripcion'],
-            'foto': foto_url,
-            'color_de_fondo': contenedor['color_de_fondo'],
-            'encabezado': contenedor['encabezado'],
-        })
+        efemerides_list = []
+        for efemeride in efemerides:
+            titulo = efemeride.get(titulo_field, 'Sin título')
+            descripcion = efemeride.get(descripcion_field, 'Sin descripción')
+            if titulo is None:
+                continue
 
-    return JsonResponse(contenedores_list, safe=False)
+            efemerides_list.append({
+                'id': efemeride['id'],
+                'titulo': titulo,
+                'fecha': efemeride['fecha'],
+                'descripcion': descripcion,
+                'foto': 'https://back.dcubamusica.cult.cu/public/' + efemeride.get('foto', ''),
+                'color_de_fondo': efemeride['color_de_fondo'],
+                'encabezado': efemeride.get(encabezado_field, '')
+            })
+
+    return JsonResponse(efemerides_list, safe=False)
+
 
 def get_efem_by_month(request, month):
-    contenedores = Efemerides.objects.filter(fecha__month=month).order_by('fecha').values()
-    contenedores_list = []
+    lang = request.GET.get('lang', 'es')
+    with translation.override(lang):
+        current_language = translation.get_language()
+        titulo_field = f'titulo_{current_language}'
+        descripcion_field = f'descripcion_{current_language}'
+        encabezado_field = f'encabezado_{current_language}'
 
-    for contenedor in contenedores:
 
-        foto_url = ('https://back.dcubamusica.cult.cu/public/'+contenedor.get('foto') if contenedor.get('foto') else None)
+        efemerides = Efemerides.objects.filter(fecha__month=month).order_by('fecha').values(
+            'id', 'fecha', 'foto', 'color_de_fondo', encabezado_field, titulo_field, descripcion_field
+        )
 
-        contenedores_list.append({
-            'id': contenedor['id'],
-            'titulo': contenedor['titulo'],
-            'fecha': contenedor['fecha'],
-            'descripcion': contenedor['descripcion'],
-            'foto': foto_url,
-            'color_de_fondo': contenedor['color_de_fondo'],
-            'encabezado': contenedor['encabezado'],
-        })
+        efemerides_list = []
+        for efemeride in efemerides:
+            titulo = efemeride.get(titulo_field, 'Sin título')
+            descripcion = efemeride.get(descripcion_field, 'Sin descripción')
+            if titulo is None:
+                continue
 
-    return JsonResponse(contenedores_list, safe=False)
+            efemerides_list.append({
+                'id': efemeride['id'],
+                'titulo': titulo,
+                'fecha': efemeride['fecha'],
+                'descripcion': descripcion,
+                'foto': 'https://back.dcubamusica.cult.cu/public/' + efemeride.get('foto', ''),
+                'color_de_fondo': efemeride['color_de_fondo'],
+                'encabezado': efemeride.get(encabezado_field, '')
+            })
+
+    return JsonResponse(efemerides_list, safe=False)
+
 
 
 
 def get_acontecimiento_by_date(request, month, year):
-    acontecimientos = Acontecimiento.objects.filter(fecha__month=month, fecha__year=year).order_by('fecha').values()
-    acontecimientos_list = []
+    lang = request.GET.get('lang', 'es')
+    with translation.override(lang):
+        current_language = translation.get_language()
+        titulo_field = f'titulo_{current_language}'
+        descripcion_field = f'descripcion_{current_language}'
+        encabezado_field = f'encabezado_{current_language}'
 
-    for acontecimiento in acontecimientos:
-        foto_url = ('https://back.dcubamusica.cult.cu/public/'+acontecimiento.get('foto') if acontecimiento.get('foto') else None)
-        acontecimientos_list.append({
-            'id': acontecimiento['id'],
-            'titulo': acontecimiento['titulo'],
-            'fecha': acontecimiento['fecha'],
-            'descripcion': acontecimiento['descripcion'],
-            'foto': foto_url,
-            'color_de_fondo': acontecimiento['color_de_fondo'],
-            'encabezado': acontecimiento['encabezado'],
-        })
+        acontecimientos = Acontecimiento.objects.filter(fecha__month=month, fecha__year=year).order_by('fecha').values(
+            'id', 'fecha', 'foto', 'color_de_fondo', titulo_field, descripcion_field, encabezado_field
+        )
+
+        acontecimientos_list = []
+        for acontecimiento in acontecimientos:
+            titulo = acontecimiento.get(titulo_field, 'Sin título')
+            descripcion = acontecimiento.get(descripcion_field, 'Sin descripción')
+            encabezado = acontecimiento.get(encabezado_field, '')
+
+            if titulo is None:
+                continue
+
+            acontecimientos_list.append({
+                'id': acontecimiento['id'],
+                'titulo': titulo,
+                'fecha': acontecimiento['fecha'],
+                'descripcion': descripcion,
+                'foto': 'https://back.dcubamusica.cult.cu/public/' + acontecimiento.get('foto', ''),
+                'color_de_fondo': acontecimiento['color_de_fondo'],
+                'encabezado': encabezado,
+            })
 
     return JsonResponse(acontecimientos_list, safe=False)
 
-def get_evento_by_date(request, month, year):
-    eventos = Evento.objects.filter(fecha__month=month, fecha__year=year).order_by('fecha').values()
-    eventos_list = []
 
-    for evento in eventos:
-        foto_url = ('https://back.dcubamusica.cult.cu/public/'+evento.get('foto') if evento.get('foto') else None)
-        eventos_list.append({
-            'id': evento['id'],
-            'titulo': evento['titulo'],
-            'fecha': evento['fecha'],
-            'descripcion': evento['descripcion'],
-            'foto': foto_url,
-            'color_de_fondo': evento['color_de_fondo'],
-            'encabezado': evento['encabezado'],
-            'hora': evento['hora'],
-        })
+def get_evento_by_date(request, month, year):
+    lang = request.GET.get('lang', 'es')
+    with translation.override(lang):
+        current_language = translation.get_language()
+        titulo_field = f'titulo_{current_language}'
+        descripcion_field = f'descripcion_{current_language}'
+        encabezado_field = f'encabezado_{current_language}'
+
+        eventos = Evento.objects.filter(fecha__month=month, fecha__year=year).order_by('fecha').values(
+            'id', 'fecha', 'foto', 'color_de_fondo', 'hora', titulo_field, descripcion_field, encabezado_field
+        )
+
+        eventos_list = []
+        for evento in eventos:
+            titulo = evento.get(titulo_field, 'Sin título')
+            descripcion = evento.get(descripcion_field, 'Sin descripción')
+            encabezado = evento.get(encabezado_field, '')
+
+            if titulo is None:
+                continue
+
+
+            eventos_list.append({
+                'id': evento['id'],
+                'titulo': titulo,
+                'fecha': evento['fecha'],
+                'descripcion': descripcion,
+                'foto': 'https://back.dcubamusica.cult.cu/public/' + evento.get('foto', ''),
+                'color_de_fondo': evento['color_de_fondo'],
+                'encabezado': encabezado,
+                'hora': evento['hora'],
+            })
+
+
 
     return JsonResponse(eventos_list, safe=False)
 
 
 
 def get_historia(request):
-    historia = Historia_de_la_Institución.objects.all().values()
-    contenedores_list = []
+    lang = request.GET.get('lang', 'es')
+    with translation.override(lang):
+        current_language = translation.get_language()
+        titulo_field = f'titulo_{current_language}'
+        descripcion_field = f'descripcion_{current_language}'
 
-    for contenedor in historia:
-        foto_url = ('https://back.dcubamusica.cult.cu/public/'+contenedor.get('foto') if contenedor.get('foto') else None)
-        contenedores_list.append({
-            'id': contenedor['id'],
-            'titulo': contenedor['titulo'],
-            'descripcion': contenedor['descripcion'],
-            'foto': foto_url,
-            'color_de_fondo': contenedor['color_de_fondo'],
+        historias = Historia_de_la_Institución.objects.all().values(
+            'id', 'foto', 'color_de_fondo', titulo_field, descripcion_field
+        )
 
-        })
+        historias_list = []
+        for historia in historias:
+            titulo = historia.get(titulo_field, 'Sin título')
+            descripcion = historia.get(descripcion_field, 'Sin descripción')
 
-    return JsonResponse(contenedores_list, safe=False)
+            if titulo is None:
+                continue
+
+            historias_list.append({
+                'id': historia['id'],
+                'titulo': titulo,
+                'descripcion': descripcion,
+                'foto': 'https://back.dcubamusica.cult.cu/public/' + historia.get('foto', ''),
+                'color_de_fondo': historia['color_de_fondo'],
+            })
+
+    return JsonResponse(historias_list, safe=False)
 
 def get_centros_y_directores(request):
-    # Se especifican los campos de la empresa con la sintaxis 'empresa__campo'
-    centros_y_directores = Directores.objects.select_related('empresa').all().values(
-        # 'id', 'nombre', 'telefono', 'consejo_de_direccion', 'foto', 'cargo',
-        # 'empresa__nombre',  # Por ejemplo, si la empresa tiene un campo 'nombre'
-        # 'es_cto', 'es_ceo'
-    )
-    contenedores_list = []
+    lang = request.GET.get('lang', 'es')
+    with translation.override(lang):
+        current_language = translation.get_language()
+        nombre_field = f'nombre_{current_language}'
+        cargo_field = f'cargo_{current_language}'
 
-    for contenedor in centros_y_directores:
-        foto_url = f'https://back.dcubamusica.cult.cu/public/{contenedor.get("foto")}' if contenedor.get('foto') else None
-        # Si la empresa no es None, obtiene el nombre limpio del campo RichTextField
-        # if contenedor.get('empresa__nombre'):
-        #     empresa_nombre = strip_tags(contenedor['empresa__nombre'])
-        # else:
-        #     empresa_nombre = 'Sin empresa'
+        centros_y_directores = Directores.objects.select_related('empresa').all().values(
+            'id', 'télefono', 'consejo_de_dirección', 'foto', 'es_cto', 'es_ceo',
+            nombre_field, cargo_field, 'empresa_id'
+        )
+        contenedores_list = []
+        for contenedor in centros_y_directores:
+            nombre = contenedor.get(nombre_field, 'Nombre no disponible')
+            cargo = contenedor.get(cargo_field, 'Cargo no disponible')
+            empresa_nombre = contenedor.get('empresa_id')
+            foto_url = f'https://back.dcubamusica.cult.cu/public/{contenedor.get("foto")}' if contenedor.get('foto') else None
 
-        empresa_nombre = contenedor.get('empresa_id')
+            if nombre is None:
+                continue
 
-        contenedores_list.append({
-            'id': contenedor['id'],
-            'nombre': contenedor['nombre'],
-            'telefono': contenedor.get('télefono'),
-            'consejo_de_direccion': contenedor['consejo_de_dirección'],
-            'foto': foto_url,
-            'cargo': contenedor['cargo'],
-            'empresa': empresa_nombre,
-            'cto': contenedor.get('es_cto', False),
-            'ceo': contenedor.get('es_ceo', False),
-        })
+            contenedores_list.append({
+                'id': contenedor['id'],
+                'nombre': nombre,
+                'telefono': contenedor.get('télefono'),
+                'consejo_de_direccion': contenedor['consejo_de_dirección'],
+                'foto': foto_url,
+                'cargo': cargo,
+                'empresa': empresa_nombre,
+                'cto': contenedor.get('es_cto', False),
+                'ceo': contenedor.get('es_ceo', False),
+            })
 
     return JsonResponse(contenedores_list, safe=False)
 
 
 def get_premios(request):
-    premios = Premio_Nacional_de_Música.objects.order_by('-año').values()
-    contenedores_list = []
+    lang = request.GET.get('lang', 'es')
+    with translation.override(lang):
+        current_language = translation.get_language()
+        titulo_field = f'titulo_{current_language}'
+        descripcion_field = f'descripcion_{current_language}'
 
-    for contenedor in premios:
-        foto_url = ('https://back.dcubamusica.cult.cu/public/'+contenedor.get('foto') if contenedor.get('foto') else None)
-        contenedores_list.append({
+        premios = Premio_Nacional_de_Música.objects.order_by('-año').values(
+            'id', 'año', 'foto', 'color_de_fondo', 'bibliografía', titulo_field, descripcion_field
+        )
 
-            'id': contenedor['id'],
-            'titulo': contenedor['titulo'],
-            'descripcion': contenedor['descripcion'],
-            'foto': foto_url,
-            'año' : contenedor['año'],
-            'color_de_fondo': contenedor['color_de_fondo'],
-            'bibliografia': contenedor['bibliografía'],
-        })
+        premios_list = []
+        for premio in premios:
+            titulo = premio.get(titulo_field)
+            descripcion = premio.get(descripcion_field, 'Sin descripción')
 
-    return JsonResponse(contenedores_list, safe=False)
+            if titulo is None:
+                continue
+
+            descripcion = premio.get(descripcion_field, 'Sin descripción')
+            premios_list.append({
+                'id': premio['id'],
+                'titulo': titulo,
+                'descripcion': descripcion,
+                'foto': 'https://back.dcubamusica.cult.cu/public/'+premio.get('foto', ''),
+                'año': premio['año'],
+                'color_de_fondo': premio['color_de_fondo'],
+                'bibliografia': premio['bibliografía'],
+            })
+
+    return JsonResponse(premios_list, safe=False)
 
 def get_acontecimientos_semana(request):
-    fecha = datetime.now()
-    fecha_inicio = fecha - timedelta(days = fecha.weekday())
-    fecha_fin = fecha_inicio + timedelta(days = 6)
-    acontecimientos_semana = Acontecimiento.objects.filter(fecha__range = [fecha_inicio, fecha_fin]).order_by('fecha').values()
-    acontecimientos_list = []
+    lang = request.GET.get('lang', 'es')
+    with translation.override(lang):
+        current_language = translation.get_language()
+        titulo_field = f'titulo_{current_language}'
+        descripcion_field = f'descripcion_{current_language}'
+        encabezado_field = f'encabezado_{current_language}'
 
-    for acontecimiento in acontecimientos_semana:
-        foto_url = ('https://back.dcubamusica.cult.cu/public/'+acontecimiento.get('foto') if acontecimiento.get('foto') else None)
-        acontecimientos_list.append({
-            'id': acontecimiento['id'],
-            'titulo': acontecimiento['titulo'],
-            'fecha': acontecimiento['fecha'],
-            'descripcion': acontecimiento['descripcion'],
-            'foto': foto_url,
-            'color_de_fondo': acontecimiento['color_de_fondo'],
-            'encabezado': acontecimiento['encabezado'],
-        })
+        fecha = datetime.now()
+        fecha_inicio = fecha - timedelta(days=fecha.weekday())
+        fecha_fin = fecha_inicio + timedelta(days=6)
+        acontecimientos_semana = Acontecimiento.objects.filter(fecha__range=[fecha_inicio, fecha_fin]).order_by('fecha').values(
+            'id', 'fecha', 'foto', 'color_de_fondo', encabezado_field, titulo_field, descripcion_field
+        )
+
+        acontecimientos_list = []
+        for acontecimiento in acontecimientos_semana:
+            titulo = acontecimiento.get(titulo_field, 'Sin título')
+            descripcion = acontecimiento.get(descripcion_field, 'Sin descripción')
+
+
+            if titulo is None:
+                continue
+
+            acontecimientos_list.append({
+                'id': acontecimiento['id'],
+                'titulo': titulo,
+                'fecha': acontecimiento['fecha'],
+                'descripcion': descripcion,
+                'foto': 'https://back.dcubamusica.cult.cu/public/' + acontecimiento.get('foto', ''),
+                'color_de_fondo': acontecimiento['color_de_fondo'],
+                'encabezado': acontecimiento.get(encabezado_field, '')
+            })
 
     return JsonResponse(acontecimientos_list, safe=False)
 
-def get_eventos_semana(request):
-    fecha = datetime.now()
-    fecha_inicio = fecha - timedelta(days = fecha.weekday())
-    fecha_fin = fecha_inicio + timedelta(days = 6)
-    eventos_semana = Evento.objects.filter(fecha__range = [fecha_inicio, fecha_fin]).order_by('fecha').values()
-    eventos_list = []
 
-    for evento in eventos_semana:
-        foto_url = ('https://back.dcubamusica.cult.cu/public/'+evento.get('foto') if evento.get('foto') else None)
-        eventos_list.append({
-            'id': evento['id'],
-            'titulo': evento['titulo'],
-            'fecha': evento['fecha'],
-            'descripcion': evento['descripcion'],
-            'foto': foto_url,
-            'color_de_fondo': evento['color_de_fondo'],
-            'encabezado': evento['encabezado'],
-            'hora': evento['hora'],
-        })
+def get_eventos_semana(request):
+    lang = request.GET.get('lang', 'es')
+    with translation.override(lang):
+        current_language = translation.get_language()
+        titulo_field = f'titulo_{current_language}'
+        descripcion_field = f'descripcion_{current_language}'
+        encabezado_field = f'encabezado_{current_language}'
+
+        fecha = datetime.now()
+        fecha_inicio = fecha - timedelta(days=fecha.weekday())
+        fecha_fin = fecha_inicio + timedelta(days=6)
+        eventos_semana = Evento.objects.filter(fecha__range=[fecha_inicio, fecha_fin]).order_by('fecha').values(
+            'id', 'fecha', 'foto', 'color_de_fondo', encabezado_field, 'hora', titulo_field, descripcion_field
+        )
+
+        eventos_list = []
+        for evento in eventos_semana:
+            titulo = evento.get(titulo_field, 'Sin título')
+            descripcion = evento.get(descripcion_field, 'Sin descripción')
+
+            if titulo is None:
+                continue
+            eventos_list.append({
+                'id': evento['id'],
+                'titulo': titulo,
+                'fecha': evento['fecha'],
+                'descripcion': descripcion,
+                'foto': 'https://back.dcubamusica.cult.cu/public/' + evento.get('foto', ''),
+                'color_de_fondo': evento['color_de_fondo'],
+                'encabezado': evento.get(encabezado_field, ''),
+                'hora': evento.get('hora', '')
+            })
 
     return JsonResponse(eventos_list, safe=False)
 
+
 def get_centros_contactos(request):
-    centros = Centros_y_Empresas.objects.all().values()
-    contenedores_list = []
+    lang = request.GET.get('lang', 'es')
+    with translation.override(lang):
+        current_language = translation.get_language()
+        nombre_field = f'nombre_{current_language}'
+        direccion_field = f'dirección_{current_language}'
 
-    for contenedor in centros:
-        foto_url = ('https://back.dcubamusica.cult.cu/public/'+contenedor.get('foto') if contenedor.get('foto') else None)
-        contenedores_list.append({
-            'id': contenedor['id'],
-            'nombre': contenedor['nombre'],
-            'telefono': contenedor['télefono'],
-            'direccion': contenedor['dirección'],
-            'foto': foto_url,
-            'correo': contenedor['correo'],
-
-
-
-        })
+        centros = Centros_y_Empresas.objects.all().values(
+            'id', 'télefono', 'correo', nombre_field, direccion_field
+        )
+        contenedores_list = []
+        for contenedor in centros:
+            nombre = contenedor.get(nombre_field, 'Nombre no disponible')
+            direccion = contenedor.get(direccion_field, 'Dirección no disponible')
+            if nombre is None:
+                continue
+            contenedores_list.append({
+                'id': contenedor['id'],
+                'nombre': nombre,
+                'telefono': contenedor['télefono'],
+                'direccion': direccion,
+                'correo': contenedor['correo']
+            })
 
     return JsonResponse(contenedores_list, safe=False)
+
 
 
 def get_redes(request):
-    # Se especifican los campos de la empresa con la sintaxis 'empresa__campo'
-    redes = Redes.objects.all().values(
-    )
-    contenedores_list = []
+    lang = request.GET.get('lang', 'es')
+    with translation.override(lang):
+        current_language = translation.get_language()
+        titulo_field = f'titulo_{current_language}'
 
-    for contenedor in redes:
-        foto_url = f'https://back.dcubamusica.cult.cu/public/{contenedor.get("foto")}' if contenedor.get('foto') else None
+        redes = Redes.objects.all().values('id', 'enlace', 'foto', titulo_field)
 
-        contenedores_list.append({
-            'id': contenedor['id'],
-            'titulo': contenedor['titulo'],
-            'enlace': contenedor['enlace'],
-            'foto': foto_url,
+        redes_list = []
+        for red in redes:
+            titulo = red.get(titulo_field, 'Sin título')
 
-        })
+            if titulo is None:
+                continue
 
-    return JsonResponse(contenedores_list, safe=False)
+            redes_list.append({
+                'id': red['id'],
+                'titulo': titulo,
+                'enlace': red['enlace'],
+                'foto': 'https://back.dcubamusica.cult.cu/public/' + red.get('foto', ''),
+            })
+
+    return JsonResponse(redes_list, safe=False)
 
 def get_multimedias(request):
-    # Se especifican los campos de la empresa con la sintaxis 'empresa__campo'
-    multimedias = Multimedia.objects.all().values(
-    )
-    contenedores_list = []
+    lang = request.GET.get('lang', 'es')
+    with translation.override(lang):
+        current_language = translation.get_language()
+        titulo_field = f'titulo_{current_language}'
+        descripcion_field = f'descripcion_{current_language}'
 
-    for contenedor in multimedias:
-        foto_url = f'https://back.dcubamusica.cult.cu/public/{contenedor.get("foto")}' if contenedor.get('foto') else None
-        multimedia = ('https://back.dcubamusica.cult.cu/public/'+contenedor.get('archivo') if contenedor.get('archivo') else None)
+        multimedias = Multimedia.objects.all().values(
+            'id', 'tipo', 'enlace', 'archivo', 'foto', titulo_field, descripcion_field, 'color_de_fondo'
+        )
 
-        # Si la empresa no es None, obtiene el nombre limpio del campo RichTextField
-        # if contenedor.get('empresa__nombre'):
-        #     empresa_nombre = strip_tags(contenedor['empresa__nombre'])
-        # else:
-        #     empresa_nombre = 'Sin empresa'
-        contenedores_list.append({
-            'id': contenedor['id'],
-            'titulo': contenedor['titulo'],
-            'tipo': contenedor.get('tipo'),
-            'enlace': contenedor['enlace'],
-            'foto': foto_url,
-            'archivo': multimedia,
-            'descripcion': contenedor['descripcion'],
-            'color_de_fondo': contenedor['color_de_fondo'],
+        multimedias_list = []
+        for multimedia in multimedias:
+            titulo = multimedia.get(titulo_field)
+            descripcion = multimedia.get(descripcion_field, 'Sin descripción')
 
-        })
+            if titulo is None:
+                continue
 
-    return JsonResponse(contenedores_list, safe=False)
+            multimedias_list.append({
+                'id': multimedia['id'],
+                'titulo': titulo,
+                'descripcion': descripcion,
+                'tipo': multimedia['tipo'],
+                'enlace': multimedia['enlace'],
+                'foto': 'https://back.dcubamusica.cult.cu/public/' + multimedia.get('foto', ''),
+                'archivo': 'https://back.dcubamusica.cult.cu/public/' + multimedia.get('archivo', ''),
+                'color_de_fondo': multimedia['color_de_fondo'],
+            })
+
+    return JsonResponse(multimedias_list, safe=False)
+
+
+# def detalle_multimedia(request, id):
+#     # Intenta obtener los detalles de la revista como un diccionario dado un ID
+#     try:
+#         contenedor = Multimedia.objects.filter(id=id).values().get()
+#     except Multimedia.DoesNotExist:
+#         return JsonResponse({'error': 'Multimedia no encontrada'}, status=404)
+
+#     # Construye las URLs de las imágenes y pdfs, si existen
+#     foto_url = f'https://back.dcubamusica.cult.cu/public/{contenedor.get("foto")}' if contenedor.get('foto') else None
+
+#     multimedia = ('https://back.dcubamusica.cult.cu/public/'+contenedor.get('archivo') if contenedor.get('archivo') else None)
+
+#     # Prepara el diccionario con los datos de la revista actualizados
+#     mult = {
+#         'id': contenedor['id'],
+#         'titulo': contenedor['titulo'],
+#         'tipo': contenedor.get('tipo'),
+#         'enlace': contenedor['enlace'],
+#         'foto': foto_url,
+#         'archivo': multimedia,
+#         'descripcion': contenedor['descripcion'],
+#         'color_de_fondo': contenedor['color_de_fondo'],
+#     }
+
+#     return JsonResponse(mult)
 
 
 def detalle_multimedia(request, id):
-    # Intenta obtener los detalles de la revista como un diccionario dado un ID
-    try:
-        contenedor = Multimedia.objects.filter(id=id).values().get()
-    except Multimedia.DoesNotExist:
-        return JsonResponse({'error': 'Multimedia no encontrada'}, status=404)
+    lang = request.GET.get('lang', 'es')
+    with translation.override(lang):
+        current_language = translation.get_language()
+        titulo_field = f'titulo_{current_language}'
+        descripcion_field = f'descripcion_{current_language}'
 
-    # Construye las URLs de las imágenes y pdfs, si existen
-    foto_url = f'https://back.dcubamusica.cult.cu/public/{contenedor.get("foto")}' if contenedor.get('foto') else None
+        try:
+            contenedor = Multimedia.objects.filter(id=id).values('id', 'foto', 'archivo', 'tipo', 'enlace', 'color_de_fondo', titulo_field, descripcion_field).get()
+        except Multimedia.DoesNotExist:
+            return JsonResponse({'error': 'Multimedia no encontrada'}, status=404)
 
-    multimedia = ('https://back.dcubamusica.cult.cu/public/'+contenedor.get('archivo') if contenedor.get('archivo') else None)
+        foto_url = f'https://back.dcubamusica.cult.cu/public/{contenedor.get("foto")}' if contenedor.get('foto') else None
+        multimedia_url = f'https://back.dcubamusica.cult.cu/public/{contenedor.get("archivo")}' if contenedor.get('archivo') else None
+        titulo = contenedor.get(titulo_field, 'Sin título')
+        descripcion = contenedor.get(descripcion_field, 'Sin descripción')
 
-    # Prepara el diccionario con los datos de la revista actualizados
-    mult = {
-        'id': contenedor['id'],
-        'titulo': contenedor['titulo'],
-        'tipo': contenedor.get('tipo'),
-        'enlace': contenedor['enlace'],
-        'foto': foto_url,
-        'archivo': multimedia,
-        'descripcion': contenedor['descripcion'],
-        'color_de_fondo': contenedor['color_de_fondo'],
-    }
+        multimedia_data = {
+            'id': contenedor['id'],
+            'titulo': titulo,
+            'tipo': contenedor.get('tipo'),
+            'enlace': contenedor['enlace'],
+            'foto': foto_url,
+            'archivo': multimedia_url,
+            'descripcion': descripcion,
+            'color_de_fondo': contenedor['color_de_fondo'],
+        }
 
-    return JsonResponse(mult)
+    return JsonResponse(multimedia_data)
+
+
+
+def get_ceo(request):
+    lang = request.GET.get('lang', 'es')
+    with translation.override(lang):
+        current_language = translation.get_language()
+        name_field = f'nombre_{current_language}'
+        position_field = f'cargo_{current_language}'
+
+        ceo = Directores.objects.filter(cargo__icontains='es_ceo').values(name_field, position_field).first()
+        if ceo is None:
+            return JsonResponse({'error': 'No CEO found'}, status=404)
+
+        name = ceo.get(name_field, 'No name available')
+        position = ceo.get(position_field, 'No position available')
+
+        return JsonResponse({'nombre': name, 'cargo': position})
+
+def get_cto(request):
+    lang = request.GET.get('lang', 'es')
+    with translation.override(lang):
+        current_language = translation.get_language()
+        name_field = f'nombre_{current_language}'
+        position_field = f'cargo_{current_language}'
+
+        cto = Directores.objects.filter(cargo__icontains='es_cto').values(name_field, position_field).first()
+        if cto is None:
+            return JsonResponse({'error': 'No CTO found'}, status=404)
+
+        name = cto.get(name_field, 'No name available')
+        position = cto.get(position_field, 'No position available')
+
+        return JsonResponse({'nombre': name, 'cargo': position})
+
+# def get_cto(request):
+#     cto = Director.objects.filter(position='es_cto').first()
+#     if cto is None:
+#         return JsonResponse({'error': 'No CTO found'}, status=404)
+#     return JsonResponse({'name': cto.name, 'position': cto.position})

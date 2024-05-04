@@ -26,6 +26,8 @@ urlpatterns = [
     path('multimedias/', views.get_multimedias, name='get_multimedias'),
     path('multimedias/<int:id>/', views.detalle_multimedia, name='detalle_multimedia'),
     path("redes/", views.get_redes, name="get_redes"),
+    path("get_cto/", views.get_cto, name="get_cto"),
+    path("get_ceo/", views.get_ceo, name="get_ceo"),
     path('select-banner-form/', select_banner_form, name='bannerprincipal_select'),
 
 
