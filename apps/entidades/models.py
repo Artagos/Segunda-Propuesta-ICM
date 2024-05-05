@@ -446,12 +446,12 @@ class Directores(ImageManagementMixin):
         verbose_name_plural = "Directores"
 
     nombre = RichTextField(config_name='small', blank=False, null=False)
-    foto = models.FileField(upload_to='images/', default='images/blank.webp', blank=True,null=True)
+    foto = models.FileField(upload_to='images/', default='blank.webp', blank=True,null=True)
     cargo = models.CharField(max_length=500, blank=False, null=False)
     télefono = models.CharField(max_length=20, blank=False, null=False)  # Corregido 'télefono' por 'telefono'
     correo = models.EmailField(blank=False, null=False)
     consejo_de_dirección = models.BooleanField(default=False, blank=True,null=True)  # Cambiado 'null=False' por 'default=False'
-    empresa = models.OneToOneField("Centros_y_Empresas", on_delete=models.CASCADE, blank=False, null=False)
+    empresa = models.ForeignKey("Centros_y_Empresas", on_delete=models.CASCADE, blank=False, null=False)
     es_ceo = models.BooleanField(default=False, verbose_name="¿Es CEO?")  # Campo booleano para CEO
     es_cto = models.BooleanField(default=False, verbose_name="¿Es CTO?")  # Campo booleano para CTO
 

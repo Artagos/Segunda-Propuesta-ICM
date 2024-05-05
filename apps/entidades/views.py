@@ -707,12 +707,15 @@ def get_ceo(request):
         name_field = f'nombre_{current_language}'
         position_field = f'cargo_{current_language}'
 
-        ceo = Directores.objects.filter(cargo__icontains='es_ceo').values(name_field, position_field).first()
+        ceo = Directores.objects.filter(es_ceo=True).values(name_field, position_field).first()
         if ceo is None:
             return JsonResponse({'error': 'No CEO found'}, status=404)
 
         name = ceo.get(name_field, 'No name available')
         position = ceo.get(position_field, 'No position available')
+
+        if name is None:
+            return JsonResponse({'error': 'No CTO found'}, status=404)
 
         return JsonResponse({'nombre': name, 'cargo': position})
 
@@ -723,12 +726,15 @@ def get_cto(request):
         name_field = f'nombre_{current_language}'
         position_field = f'cargo_{current_language}'
 
-        cto = Directores.objects.filter(cargo__icontains='es_cto').values(name_field, position_field).first()
+        cto = Directores.objects.filter(es_cto=True).values(name_field, position_field).first()
         if cto is None:
             return JsonResponse({'error': 'No CTO found'}, status=404)
 
         name = cto.get(name_field, 'No name available')
         position = cto.get(position_field, 'No position available')
+
+        if name is None:
+            return JsonResponse({'error': 'No CTO found'}, status=404)
 
         return JsonResponse({'nombre': name, 'cargo': position})
 
