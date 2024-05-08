@@ -12,9 +12,8 @@ from django.contrib.admin import SimpleListFilter
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
 from modeltranslation.admin import TranslationAdmin
-from . import translation
+# from . import translation
 from django.utils.translation import get_language
-
 
 
 
@@ -30,8 +29,8 @@ class RichTextFieldAdmin(admin.ModelAdmin):
             titulo = obj.titulo_en
         elif current_language == 'es':
             titulo = obj.titulo_es
-        else:
-            titulo = obj.titulo
+        # else:
+        #     titulo = obj.titulo
 
         if titulo is None or titulo == '':
             return None
@@ -39,10 +38,95 @@ class RichTextFieldAdmin(admin.ModelAdmin):
             return strip_tags(titulo)
     get_titulo_plain.short_description = 'Titulo'
 
+    def get_bibliografía_plain(self, obj):
+        current_language = get_language()
+        if current_language == 'en':
+            bibliografía = obj.bibliografía_en
+        elif current_language == 'es':
+            bibliografía = obj.bibliografía_es
+        # else:
+        #     titulo = obj.titulo
+
+        if bibliografía is None or bibliografía == '':
+            return None
+        else:
+            return strip_tags(bibliografía)
+    get_bibliografía_plain.short_description = 'Bibliografía'
+
     def get_desc_plain(self, obj):
-        return strip_tags(obj.descripcion)
+        current_language = get_language()
+        if current_language == 'en':
+            descripcion = obj.descripcion_en
+        elif current_language == 'es':
+            descripcion = obj.descripcion_es
+
+        if descripcion is None or descripcion == '':
+            return None
+        else:
+            return strip_tags(descripcion)
+
+
     get_desc_plain.short_description = 'Descripción'
 
+    def get_enc_plain(self, obj):
+        current_language = get_language()
+        if current_language == 'en':
+            encabezado = obj.encabezado_en
+        elif current_language == 'es':
+            encabezado = obj.encabezado_es
+
+        if encabezado is None or encabezado == '':
+            return None
+        else:
+            return strip_tags(encabezado)
+
+
+    get_enc_plain.short_description = 'Encabezado'
+
+    def get_name_plain(self, obj):
+        current_language = get_language()
+        if current_language == 'en':
+            nombre = obj.nombre_en
+        elif current_language == 'es':
+            nombre = obj.nombre_es
+
+        if nombre is None or nombre == '':
+            return None
+        else:
+            return strip_tags(nombre)
+
+
+    get_name_plain.short_description = 'Nombre'
+
+    def get_cargo_plain(self, obj):
+        current_language = get_language()
+        if current_language == 'en':
+            cargo = obj.cargo_en
+        elif current_language == 'es':
+            cargo = obj.cargo_es
+
+        if cargo is None or cargo == '':
+            return None
+        else:
+            return strip_tags(cargo)
+
+
+    get_cargo_plain.short_description = 'Cargo'
+
+    def get_dirección_plain(self, obj):
+        current_language = get_language()
+        if current_language == 'en':
+            dirección = obj.dirección_en
+        elif current_language == 'es':
+            dirección = obj.dirección_es
+
+        if dirección is None or dirección == '':
+            return None
+        else:
+            return strip_tags(dirección)
+
+
+    get_dirección_plain.short_description = 'Dirección'
 
 
 class RevistaAdminForm(forms.ModelForm):
@@ -69,7 +153,7 @@ class RevistaAdminForm(forms.ModelForm):
         self.fields['descripcion_en'].label = 'Description'
         self.fields['descripcion_es'].label = 'Descripcion'
 
-class EventoAdminForm(forms.ModelForm):
+class EventoAdminForm(forms.ModelForm,TranslationAdmin):
     class Meta:
         model = Evento
         fields = '__all__'
@@ -80,11 +164,16 @@ class EventoAdminForm(forms.ModelForm):
         # Obtener el idioma actual de la sesión
         current_language = get_language()
 
+        if (current_language == 'en'):
+            not_current = 'es'
+        else:
+            not_current = 'en'
+
         # Ajustar los campos de idioma para ser obligatorios solo si están en el idioma actual
         for field_name in self.fields:
             if field_name.endswith(f'_{current_language}'):
                 self.fields[field_name].required = True
-            else:
+            elif field_name.endswith(f'_{not_current}'):
                 self.fields[field_name].required = False
         # Cambiar las etiquetas
         self.fields['titulo_en'].label = 'Title'
@@ -96,8 +185,8 @@ class EventoAdminForm(forms.ModelForm):
         self.fields['encabezado_en'].label = 'Subtitle'
         self.fields['encabezado_es'].label = 'Encabezado'
 
-        self.fields['fecha_en'].label = 'Date'
-        self.fields['fecha_es'].label = 'Fecha'
+        # self.fields['fecha_en'].label = 'Date'
+        # self.fields['fecha_es'].label = 'Fecha'
 
 class PremioNacionalDeMusicaAdminForm(forms.ModelForm):
     current_year = datetime.datetime.now().year
@@ -116,10 +205,16 @@ class PremioNacionalDeMusicaAdminForm(forms.ModelForm):
         current_language = get_language()
 
         # Ajustar los campos de idioma para ser obligatorios solo si están en el idioma actual
+        if (current_language == 'en'):
+            not_current = 'es'
+        else:
+            not_current = 'en'
+
+        # Ajustar los campos de idioma para ser obligatorios solo si están en el idioma actual
         for field_name in self.fields:
             if field_name.endswith(f'_{current_language}'):
                 self.fields[field_name].required = True
-            else:
+            elif field_name.endswith(f'_{not_current}'):
                 self.fields[field_name].required = False
         # Cambiar las etiquetas
         self.fields['titulo_en'].label = 'Title'
@@ -146,10 +241,16 @@ class AcontecimientoAdminForm(forms.ModelForm):
         current_language = get_language()
 
         # Ajustar los campos de idioma para ser obligatorios solo si están en el idioma actual
+        if (current_language == 'en'):
+            not_current = 'es'
+        else:
+            not_current = 'en'
+
+        # Ajustar los campos de idioma para ser obligatorios solo si están en el idioma actual
         for field_name in self.fields:
             if field_name.endswith(f'_{current_language}'):
                 self.fields[field_name].required = True
-            else:
+            elif field_name.endswith(f'_{not_current}'):
                 self.fields[field_name].required = False
         # Cambiar las etiquetas
         self.fields['titulo_en'].label = 'Title'
@@ -161,8 +262,8 @@ class AcontecimientoAdminForm(forms.ModelForm):
         self.fields['encabezado_en'].label = 'Subtitle'
         self.fields['encabezado_es'].label = 'Encabezado'
 
-        self.fields['fecha_en'].label = 'Date'
-        self.fields['fecha_es'].label = 'Fecha'
+        # self.fields['fecha_en'].label = 'Date'
+        # self.fields['fecha_es'].label = 'Fecha'
 
 class HistoriaDeLaInstitucionAdminForm(forms.ModelForm):
     class Meta:
@@ -177,10 +278,16 @@ class HistoriaDeLaInstitucionAdminForm(forms.ModelForm):
         current_language = get_language()
 
         # Ajustar los campos de idioma para ser obligatorios solo si están en el idioma actual
+        if (current_language == 'en'):
+            not_current = 'es'
+        else:
+            not_current = 'en'
+
+        # Ajustar los campos de idioma para ser obligatorios solo si están en el idioma actual
         for field_name in self.fields:
             if field_name.endswith(f'_{current_language}'):
                 self.fields[field_name].required = True
-            else:
+            elif field_name.endswith(f'_{not_current}'):
                 self.fields[field_name].required = False
         # Cambiar las etiquetas
         self.fields['titulo_en'].label = 'Title'
@@ -202,10 +309,16 @@ class CentrosYEmpresasAdminForm(forms.ModelForm):
         current_language = get_language()
 
         # Ajustar los campos de idioma para ser obligatorios solo si están en el idioma actual
+        if (current_language == 'en'):
+            not_current = 'es'
+        else:
+            not_current = 'en'
+
+        # Ajustar los campos de idioma para ser obligatorios solo si están en el idioma actual
         for field_name in self.fields:
             if field_name.endswith(f'_{current_language}'):
                 self.fields[field_name].required = True
-            else:
+            elif field_name.endswith(f'_{not_current}'):
                 self.fields[field_name].required = False
         # Cambiar las etiquetas
         self.fields['nombre_en'].label = 'Name'
@@ -228,10 +341,16 @@ class DirectoresAdminForm(forms.ModelForm):
         current_language = get_language()
 
         # Ajustar los campos de idioma para ser obligatorios solo si están en el idioma actual
+        if (current_language == 'en'):
+            not_current = 'es'
+        else:
+            not_current = 'en'
+
+        # Ajustar los campos de idioma para ser obligatorios solo si están en el idioma actual
         for field_name in self.fields:
             if field_name.endswith(f'_{current_language}'):
                 self.fields[field_name].required = True
-            else:
+            elif field_name.endswith(f'_{not_current}'):
                 self.fields[field_name].required = False
         # Cambiar las etiquetas
         self.fields['nombre_en'].label = 'Name'
@@ -263,10 +382,16 @@ class MultimediaAdminForm(forms.ModelForm):
         current_language = get_language()
 
         # Ajustar los campos de idioma para ser obligatorios solo si están en el idioma actual
+        if (current_language == 'en'):
+            not_current = 'es'
+        else:
+            not_current = 'en'
+
+        # Ajustar los campos de idioma para ser obligatorios solo si están en el idioma actual
         for field_name in self.fields:
             if field_name.endswith(f'_{current_language}'):
                 self.fields[field_name].required = True
-            else:
+            elif field_name.endswith(f'_{not_current}'):
                 self.fields[field_name].required = False
         # Cambiar las etiquetas
         self.fields['titulo_en'].label = 'Title'
@@ -289,10 +414,16 @@ class EfemeridesAdminForm(forms.ModelForm):
         current_language = get_language()
 
         # Ajustar los campos de idioma para ser obligatorios solo si están en el idioma actual
+        if (current_language == 'en'):
+            not_current = 'es'
+        else:
+            not_current = 'en'
+
+        # Ajustar los campos de idioma para ser obligatorios solo si están en el idioma actual
         for field_name in self.fields:
             if field_name.endswith(f'_{current_language}'):
                 self.fields[field_name].required = True
-            else:
+            elif field_name.endswith(f'_{not_current}'):
                 self.fields[field_name].required = False
         # Cambiar las etiquetas
         self.fields['titulo_en'].label = 'Title'
@@ -304,8 +435,8 @@ class EfemeridesAdminForm(forms.ModelForm):
         self.fields['encabezado_en'].label = 'Subtitle'
         self.fields['encabezado_es'].label = 'Encabezado'
 
-        self.fields['fecha_en'].label = 'Date'
-        self.fields['fecha_es'].label = 'Fecha'
+        # self.fields['fecha_en'].label = 'Date'
+        # self.fields['fecha_es'].label = 'Fecha'
 
 class RedesAdminForm(forms.ModelForm):
     class Meta:
@@ -320,10 +451,16 @@ class RedesAdminForm(forms.ModelForm):
         current_language = get_language()
 
         # Ajustar los campos de idioma para ser obligatorios solo si están en el idioma actual
+        if (current_language == 'en'):
+            not_current = 'es'
+        else:
+            not_current = 'en'
+
+        # Ajustar los campos de idioma para ser obligatorios solo si están en el idioma actual
         for field_name in self.fields:
             if field_name.endswith(f'_{current_language}'):
                 self.fields[field_name].required = True
-            else:
+            elif field_name.endswith(f'_{not_current}'):
                 self.fields[field_name].required = False
         # Cambiar las etiquetas
         self.fields['titulo_en'].label = 'Title'
@@ -344,11 +481,18 @@ class BannerPrincipalAdminForm(forms.ModelForm):
         current_language = get_language()
 
         # Ajustar los campos de idioma para ser obligatorios solo si están en el idioma actual
+        if (current_language == 'en'):
+            not_current = 'es'
+        else:
+            not_current = 'en'
+
+        # Ajustar los campos de idioma para ser obligatorios solo si están en el idioma actual
         for field_name in self.fields:
             if field_name.endswith(f'_{current_language}'):
                 self.fields[field_name].required = True
-            else:
+            elif field_name.endswith(f'_{not_current}'):
                 self.fields[field_name].required = False
+
         # Cambiar las etiquetas
         self.fields['titulo_en'].label = 'Title'
         self.fields['titulo_es'].label = 'Título'
@@ -363,7 +507,7 @@ class BannerPrincipalAdminForm(forms.ModelForm):
 
 
 @admin.register(Revista)
-class RevistaAdmin(RichTextFieldAdmin,TranslationAdmin):
+class RevistaAdmin(RichTextFieldAdmin):
     form = RevistaAdminForm
 
     list_display = ('get_titulo_plain', 'get_desc_plain', 'fecha','pdf', 'imagen_portada')
@@ -430,7 +574,7 @@ class PodcastAdminForm(forms.ModelForm):
 
 
 @admin.register(Podcast)
-class PodcastAdmin(RichTextFieldAdmin,TranslationAdmin):
+class PodcastAdmin(RichTextFieldAdmin):
     form = PodcastAdminForm
     list_display = ('get_titulo_plain', 'get_desc_plain', 'link_podcast', 'archivo_local', 'foto')
     def get_queryset(self, request):
@@ -461,9 +605,9 @@ class PodcastAdmin(RichTextFieldAdmin,TranslationAdmin):
 
 
 @admin.register(BannerPrincipal)
-class BannerPrincipalAdmin(RichTextFieldAdmin, TranslationAdmin):
+class BannerPrincipalAdmin(RichTextFieldAdmin):
     Form = BannerPrincipalAdminForm
-    list_display = ('get_titulo_plain', 'encabezado', 'get_desc_plain', 'foto', 'color_de_fondo', 'numero_unico', 'seleccionar_efemeride', 'seleccionar_acontecimiento', 'seleccionar_evento')
+    list_display = ('get_titulo_plain', 'get_enc_plain', 'get_desc_plain', 'foto', 'color_de_fondo', 'numero_unico', 'seleccionar_efemeride', 'seleccionar_acontecimiento', 'seleccionar_evento')
     # def get_list_display(self, request):
     #     default_fields = [field.name for field in self.model._meta.fields if field.name != 'id']
     #     return ['get_titulo_plain'] + default_fields
@@ -564,7 +708,7 @@ class IconosAdmin(admin.ModelAdmin):
     list_display = ('seccion', 'foto')
 
 @admin.register(Evento)
-class EventoAdmin(RichTextFieldAdmin, TranslationAdmin):
+class EventoAdmin(RichTextFieldAdmin):
     form = EventoAdminForm
     list_display = ('get_titulo_plain', 'fecha', 'get_desc_plain', 'enlace', 'hora', 'color_de_fondo', 'foto')
     def get_queryset(self, request):
@@ -574,8 +718,8 @@ class EventoAdmin(RichTextFieldAdmin, TranslationAdmin):
             return qs.exclude(titulo_en__isnull=True).exclude(titulo_en='')
         elif current_language == 'es':
             return qs.exclude(titulo_es__isnull=True).exclude(titulo_es='')
-        else:
-            return qs.exclude(titulo__isnull=True).exclude(titulo='')
+        # else:
+        #     return qs.exclude(titulo__isnull=True).exclude(titulo='')
 
     def get_form(self, request, obj=None, **kwargs):
         # Llamar a la implementación base para obtener el formulario inicial
@@ -594,7 +738,7 @@ class EventoAdmin(RichTextFieldAdmin, TranslationAdmin):
         return form
 
 @admin.register(Historia_de_la_Institución)
-class HistoriaAdmin(RichTextFieldAdmin, TranslationAdmin):
+class HistoriaAdmin(RichTextFieldAdmin):
     form = HistoriaDeLaInstitucionAdminForm
     list_display = ('get_titulo_plain', 'get_desc_plain', 'foto', 'color_de_fondo')
     def get_queryset(self, request):
@@ -624,9 +768,9 @@ class HistoriaAdmin(RichTextFieldAdmin, TranslationAdmin):
         return form
 
 @admin.register(Centros_y_Empresas)
-class CentrosAdmin(RichTextFieldAdmin,TranslationAdmin):
+class CentrosAdmin(RichTextFieldAdmin):
     form = CentrosYEmpresasAdminForm
-    list_display = ('nombre', 'dirección', 'télefono', 'correo')
+    list_display = ('get_name_plain', 'get_dirección_plain', 'télefono', 'correo')
 
     def get_form(self, request, obj=None, **kwargs):
         # Llamar a la implementación base para obtener el formulario inicial
@@ -662,9 +806,9 @@ class CentrosAdmin(RichTextFieldAdmin,TranslationAdmin):
 
 
 @admin.register(Directores)
-class DirectoresAdmin(RichTextFieldAdmin,TranslationAdmin):
+class DirectoresAdmin(RichTextFieldAdmin):
     form = DirectoresAdminForm
-    list_display = ('nombre', 'cargo', 'télefono', 'correo', 'consejo_de_dirección', 'empresa', 'foto', 'es_ceo','es_cto')
+    list_display = ('get_name_plain', 'get_cargo_plain', 'télefono', 'correo', 'consejo_de_dirección', 'empresa', 'foto', 'es_ceo','es_cto')
 
     def get_form(self, request, obj=None, **kwargs):
         # Llamar a la implementación base para obtener el formulario inicial
@@ -692,9 +836,9 @@ class DirectoresAdmin(RichTextFieldAdmin,TranslationAdmin):
 #         model = Premio_Nacional_de_Música
 #         fields = '__all__'
 @admin.register(Premio_Nacional_de_Música)
-class PremioAdmin(RichTextFieldAdmin,TranslationAdmin):
+class PremioAdmin(RichTextFieldAdmin):
     form = PremioNacionalDeMusicaAdminForm
-    list_display = ('get_titulo_plain', 'año', 'get_desc_plain', 'bibliografía', 'foto', 'color_de_fondo')
+    list_display = ('get_titulo_plain', 'año', 'get_desc_plain', 'get_bibliografía_plain', 'foto', 'color_de_fondo')
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         current_language = get_language()
@@ -729,9 +873,9 @@ class PremioAdmin(RichTextFieldAdmin,TranslationAdmin):
 
 
 @admin.register(Acontecimiento)
-class AcontecimientoAdmin(RichTextFieldAdmin, TranslationAdmin):
+class AcontecimientoAdmin(RichTextFieldAdmin):
     form=AcontecimientoAdminForm
-    list_display = ('get_titulo_plain', 'fecha', 'get_desc_plain', 'enlace', 'color_de_fondo', 'foto')
+    list_display = ('get_titulo_plain','get_enc_plain', 'fecha', 'get_desc_plain', 'enlace', 'color_de_fondo', 'foto')
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         current_language = get_language()
@@ -774,7 +918,7 @@ class AcontecimientoAdmin(RichTextFieldAdmin, TranslationAdmin):
 #         return cleaned_data
 
 @admin.register(Multimedia)
-class MultimediaAdmin(RichTextFieldAdmin,TranslationAdmin):
+class MultimediaAdmin(RichTextFieldAdmin):
     form = MultimediaAdminForm
     list_display = ('get_titulo_plain', 'get_desc_plain', 'tipo', 'enlace', 'foto', 'color_de_fondo')
     def get_queryset(self, request):
@@ -804,9 +948,9 @@ class MultimediaAdmin(RichTextFieldAdmin,TranslationAdmin):
         return form
 
 @admin.register(Efemerides)
-class EfemeridesAdmin(RichTextFieldAdmin, TranslationAdmin):
+class EfemeridesAdmin(RichTextFieldAdmin):
     form = EfemeridesAdminForm
-    list_display = ('get_titulo_plain', 'fecha', 'get_desc_plain', 'color_de_fondo', 'foto')
+    list_display = ('get_titulo_plain', 'get_enc_plain','fecha', 'get_desc_plain', 'color_de_fondo', 'foto')
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         current_language = get_language()
@@ -834,7 +978,7 @@ class EfemeridesAdmin(RichTextFieldAdmin, TranslationAdmin):
         return form
 
 @admin.register(Redes)
-class RedesAdmin(RichTextFieldAdmin, TranslationAdmin):
+class RedesAdmin(RichTextFieldAdmin):
     form = RedesAdminForm
     list_display = ('get_titulo_plain', 'enlace', 'foto')
     def get_queryset(self, request):

@@ -43,7 +43,8 @@ def lista_revistas(request):
             titulo = contenedor.get(titulo_field, 'Sin título')  # Fallback si falta la traducción
             descripcion = contenedor.get(descripcion_field, 'Sin descripción')
 
-            if titulo is None:
+
+            if titulo is None or titulo == "":
                 continue
             contenedores_list.append({
                 'id': contenedor['id'],
@@ -116,25 +117,29 @@ def lista_podcasts(request):
 
         # Utilizar .values() especificando los campos de traducción
         podcasts = Podcast.objects.all().values(
-            'id', 'link_podcast', 'foto', titulo_field, descripcion_field
+            'id', 'link_podcast', 'archivo_local', 'foto', titulo_field, descripcion_field
         )
 
         podcasts_data = []
         for contenedor in podcasts:
             foto_url = 'https://back.dcubamusica.cult.cu/public/' + contenedor.get('foto', '')
+            if(contenedor.get('link_podcast') == ""):
+                link = 'https://back.dcubamusica.cult.cu/public/' + contenedor.get('archivo_local', '')
+            else:
+                link = contenedor.get('link_podcast')
 
             # Acceder directamente a los campos traducidos
             titulo = contenedor.get(titulo_field, 'Sin título')  # Fallback si falta la traducción
             descripcion = contenedor.get(descripcion_field, 'Sin descripción')
 
-            if titulo is None:
+            if titulo is None or titulo == "":
                 continue
 
             podcasts_data.append({
                 'id': contenedor['id'],
                 'titulo': titulo,
                 'descripcion': descripcion,
-                'link_podcast': contenedor['link_podcast'],
+                'link_podcast': link,
                 'foto': foto_url
             })
 
@@ -169,7 +174,7 @@ def get_banner_principal(request):
             descripcion = banner.get(descripcion_field, 'Sin descripción')
             encabezado = banner.get(encabezado_field, 'Sin encabezado')
 
-            if titulo is None:
+            if titulo is None or titulo == "":
                 continue
 
             banner_dict = {
@@ -228,7 +233,7 @@ def get_all_efem(request):
         for efemeride in efemerides:
             titulo = efemeride.get(titulo_field, 'Sin título')
             descripcion = efemeride.get(descripcion_field, 'Sin descripción')
-            if titulo is None:
+            if titulo is None or titulo == "":
                 continue
 
             efemerides_list.append({
@@ -262,7 +267,7 @@ def get_efem_by_date(request, day, month):
         for efemeride in efemerides:
             titulo = efemeride.get(titulo_field, 'Sin título')
             descripcion = efemeride.get(descripcion_field, 'Sin descripción')
-            if titulo is None:
+            if titulo is None or titulo == "":
                 continue
 
             efemerides_list.append({
@@ -295,7 +300,7 @@ def get_efem_by_month(request, month):
         for efemeride in efemerides:
             titulo = efemeride.get(titulo_field, 'Sin título')
             descripcion = efemeride.get(descripcion_field, 'Sin descripción')
-            if titulo is None:
+            if titulo is None or titulo == "":
                 continue
 
             efemerides_list.append({
@@ -331,7 +336,7 @@ def get_acontecimiento_by_date(request, month, year):
             descripcion = acontecimiento.get(descripcion_field, 'Sin descripción')
             encabezado = acontecimiento.get(encabezado_field, '')
 
-            if titulo is None:
+            if titulo is None or titulo == "":
                 continue
 
             acontecimientos_list.append({
@@ -365,7 +370,7 @@ def get_evento_by_date(request, month, year):
             descripcion = evento.get(descripcion_field, 'Sin descripción')
             encabezado = evento.get(encabezado_field, '')
 
-            if titulo is None:
+            if titulo is None or titulo == "":
                 continue
 
 
@@ -402,7 +407,7 @@ def get_historia(request):
             titulo = historia.get(titulo_field, 'Sin título')
             descripcion = historia.get(descripcion_field, 'Sin descripción')
 
-            if titulo is None:
+            if titulo is None or titulo == "":
                 continue
 
             historias_list.append({
@@ -433,7 +438,7 @@ def get_centros_y_directores(request):
             empresa_nombre = contenedor.get('empresa_id')
             foto_url = f'https://back.dcubamusica.cult.cu/public/{contenedor.get("foto")}' if contenedor.get('foto') else None
 
-            if nombre is None:
+            if nombre is None or nombre == "":
                 continue
 
             contenedores_list.append({
@@ -467,7 +472,7 @@ def get_premios(request):
             titulo = premio.get(titulo_field)
             descripcion = premio.get(descripcion_field, 'Sin descripción')
 
-            if titulo is None:
+            if titulo is None or titulo == "":
                 continue
 
             descripcion = premio.get(descripcion_field, 'Sin descripción')
@@ -504,7 +509,7 @@ def get_acontecimientos_semana(request):
             descripcion = acontecimiento.get(descripcion_field, 'Sin descripción')
 
 
-            if titulo is None:
+            if titulo is None or titulo == "":
                 continue
 
             acontecimientos_list.append({
@@ -540,7 +545,7 @@ def get_eventos_semana(request):
             titulo = evento.get(titulo_field, 'Sin título')
             descripcion = evento.get(descripcion_field, 'Sin descripción')
 
-            if titulo is None:
+            if titulo is None or titulo == "":
                 continue
             eventos_list.append({
                 'id': evento['id'],
@@ -570,7 +575,7 @@ def get_centros_contactos(request):
         for contenedor in centros:
             nombre = contenedor.get(nombre_field, 'Nombre no disponible')
             direccion = contenedor.get(direccion_field, 'Dirección no disponible')
-            if nombre is None:
+            if nombre is None or nombre == "":
                 continue
             contenedores_list.append({
                 'id': contenedor['id'],
@@ -596,7 +601,7 @@ def get_redes(request):
         for red in redes:
             titulo = red.get(titulo_field, 'Sin título')
 
-            if titulo is None:
+            if titulo is None or titulo == "":
                 continue
 
             redes_list.append({
@@ -624,7 +629,7 @@ def get_multimedias(request):
             titulo = multimedia.get(titulo_field)
             descripcion = multimedia.get(descripcion_field, 'Sin descripción')
 
-            if titulo is None:
+            if titulo is None or titulo == "":
                 continue
 
             multimedias_list.append({
