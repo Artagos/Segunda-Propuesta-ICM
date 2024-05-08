@@ -9,41 +9,63 @@ from django.utils.translation import get_language
 from django.core.files.storage import default_storage
 from django.conf import settings
 from django.utils.text import slugify
+from django.utils import translation
+
+
 import os
 
 
 
-
-
-class ImageManagementMixin(models.Model):
+class ImageManagementMixinBanner(models.Model):
     """
-    Mixin para manejar la verificación y reutilización de archivos de imágenes existentes.
+    Mixin para manejar la verificación y reutilización de archivos de imágenes existentes en entidades relacionadas.
     """
     class Meta:
         abstract = True
 
     def save(self, *args, **kwargs):
-        # Este método asume que el campo de la imagen se llama 'imagen_portada'
+        current_language = get_language()
+
+        # Asigna atributos basados en la selección y el idioma
+        if self.seleccionar_efemeride:
+            selected = self.seleccionar_efemeride
+        elif self.seleccionar_acontecimiento:
+            selected = self.seleccionar_acontecimiento
+        elif self.seleccionar_evento:
+            selected = self.seleccionar_evento
+        else:
+            selected = None
+
+        if selected:
+            self.titulo = getattr(selected, f'titulo_{current_language}', "")
+            self.descripcion = getattr(selected, f'descripcion_{current_language}', "")
+            self.encabezado = getattr(selected, f'encabezado_{current_language}', "")
+            self.foto = selected.foto
+            self.color_de_fondo = selected.color_de_fondo
+
         if hasattr(self, 'foto') and self.foto:
-            # Construye la ruta completa donde se guardaría la imagen
-            self.foto.name = self.normalize_file_name(self.foto.name, 'images/')
-            file_path = self.get_upload_path(self.foto.name)
+            normalized_name = self.normalize_file_name(self.foto.name)
+            print(normalized_name)
+            file_path = self.get_upload_path(normalized_name)
 
             if default_storage.exists(file_path):
-
-                self.foto = file_path
+                # Si el archivo ya existe, se reutiliza la misma ruta sin guardar el archivo de nuevo
+                # Solo actualiza el nombre para reflejar la ubicación correcta
+                self.foto.name = file_path
             else:
+                # Si el archivo no existe, procede con el guardado normal
+                # Asegúrate de actualizar el nombre del archivo al nombre normalizado completo
+                self.foto.name = normalized_name
+                super(ImageManagementMixinBanner, self).save(*args, **kwargs)  # Guarda el modelo con el nuevo archivo
+                return  # Salir para evitar guardado duplicado
+        else:
+            # Si no hay foto o el atributo 'foto' no existe, guarda normalmente
+            super(ImageManagementMixinBanner, self).save(*args, **kwargs)# Guarda el modelo normalmente si no se cumple la condición anterior
 
-                super(ImageManagementMixin, self).save(*args, **kwargs)
-
-        # Guarda la instancia del modelo
-        super(ImageManagementMixin, self).save(*args, **kwargs)
-
-    def normalize_file_name(self, filename, path):
+    def normalize_file_name(self, filename):
         """
-        Normalize and possibly clean up file names to match how Django would handle them on upload.
+        Normaliza y limpia los nombres de los archivos para coincidir con cómo Django los manejaría en la carga.
         """
-        # You might want to further enhance this normalization
         base, ext = os.path.splitext(filename)
         return slugify(base) + ext.lower()
 
@@ -54,15 +76,106 @@ class ImageManagementMixin(models.Model):
         return os.path.join('images/', filename)
 
 
+class ImageManagementMixin(models.Model):
+    """
+    Mixin para manejar la verificación y reutilización de archivos de imágenes existentes.
+    """
+    class Meta:
+        abstract = True
+
+    def save(self, *args, **kwargs):
+        # Este método asume que el campo de la imagen se llama 'foto'
+        if hasattr(self, 'foto') and self.foto:
+            # Normaliza el nombre del archivo sin alterar la ruta de guardado
+            normalized_name = self.normalize_file_name(self.foto.name)
+            # Construye la ruta completa donde se guardaría la imagen
+            file_path = self.get_upload_path(normalized_name)
+
+            if default_storage.exists(file_path):
+                # Si el archivo ya existe, reutiliza la misma ruta
+                self.foto = file_path
+            else:
+                # Si el archivo no existe, procede con el guardado normal
+                self.foto = file_path
+                super(ImageManagementMixin, self).save(*args, **kwargs)
+                return  # Sal del método después de guardar para evitar llamadas duplicadas a save()
+
+        # Si no hay foto o el atributo 'foto' no existe, o el archivo ya existe y no necesita ser guardado de nuevo
+        super(ImageManagementMixin, self).save(*args, **kwargs)
+
+    def normalize_file_name(self, filename):
+        """
+        Normaliza y limpia los nombres de los archivos para coincidir con cómo Django los manejaría en la carga.
+        """
+        base, ext = os.path.splitext(filename)
+        return slugify(base) + ext.lower()
+
+    def get_upload_path(self, filename):
+        """
+        Construye la ruta de carga basada en el directorio 'images/'
+        """
+        return os.path.join('images/', filename)
+
+
+# class ImageManagementMixin(models.Model):
+#     """
+#     Mixin para manejar la verificación y reutilización de archivos de imágenes existentes.
+#     """
+#     class Meta:
+#         abstract = True
+
+#     def save(self, *args, **kwargs):
+#         # Este método asume que el campo de la imagen se llama 'foto'
+#         if hasattr(self, 'foto') and self.foto:
+#             # Normaliza el nombre del archivo sin alterar la ruta de guardado
+#             normalized_name = self.normalize_file_name(self.foto.name)
+#             # Construye la ruta completa donde se guardaría la imagen
+#             file_path = self.get_upload_path(normalized_name)
+
+#             if default_storage.exists(file_path):
+#                 # Si el archivo ya existe, reutiliza la misma ruta
+#                 self.foto.name = normalized_name
+#             else:
+#                 # Si el archivo no existe, procede con el guardado normal
+#                 self.foto.name = normalized_name
+#                 super(ImageManagementMixin, self).save(*args, **kwargs)
+#         else:
+#             # Si no hay foto o el atributo 'foto' no existe, guarda normalmente
+#             super(ImageManagementMixin, self).save(*args, **kwargs)
+
+#     def normalize_file_name(self, filename):
+#         """
+#         Normaliza y limpia los nombres de los archivos para coincidir con cómo Django los manejaría en la carga.
+#         """
+#         base, ext = os.path.splitext(filename)
+#         return slugify(base) + ext.lower()
+
+#     def get_upload_path(self, filename):
+#         """
+#         Construye la ruta de carga basada en el directorio 'images/'
+#         """
+#         return os.path.join('images/', filename)
+
+
 class Revista(models.Model):
-    titulo = RichTextField(config_name='small', blank=False, null=False)
-    descripcion = RichTextField(blank=False, null=False)
+    titulo_es = RichTextField(config_name='small', blank=False, null=False)
+    descripcion_es = RichTextField(blank=False, null=False)
+    titulo_en = RichTextField(default= 'a',config_name='small', blank=False, null=False)
+    descripcion_en = RichTextField(default= 'a', blank=False, null=False)
     fecha = models.DateField(blank=False, null=False)
     pdf = models.FileField(upload_to='pdfs/', blank=False, null=False,max_length=500)
     imagen_portada = models.ImageField(upload_to='images/',blank=False, null=False,max_length=500)
 
+
     def __str__(self):
-        return str(self.titulo)
+        # Obtener el idioma actualmente activo
+        current_language = translation.get_language()
+
+        # Devolver el título correspondiente al idioma activo
+        if current_language == 'es':
+            return str(self.titulo_es)
+        elif current_language == 'en':
+            return str(self.titulo_en)
 
     def save(self, *args, **kwargs):
         self.imagen_portada.name = self.normalize_file_name(self.imagen_portada.name, 'images/')
@@ -140,9 +253,11 @@ class Revista(models.Model):
 
 
 class Podcast(models.Model):
-    titulo = RichTextField(config_name = 'small', blank=True, null=True)
-    descripcion = RichTextField(blank=True, null=True)
-    link_podcast = models.URLField(blank=True, null=True)  # Puede contener tanto URLs locales como externas
+    titulo_es = RichTextField(config_name = 'small',blank=False, null=False)
+    descripcion_es = RichTextField(blank=False, null=False)
+    titulo_en = RichTextField(config_name='small', blank=False, null=False)
+    descripcion_en = RichTextField(blank=False, null=False)
+    link_podcast = models.URLField(blank=False, null=False)  # Puede contener tanto URLs locales como externas
     archivo_local = models.FileField(upload_to='podcast/', blank=False, null=False,max_length=500)
     foto = models.ImageField(upload_to='images/',blank=False, null=False,max_length=500)
 
@@ -182,23 +297,31 @@ class Podcast(models.Model):
         return slugify(base) + ext.lower()
 
 
+
     def __str__(self):
-        return str(self.titulo)
+        # Obtener el idioma actualmente activo
+        current_language = translation.get_language()
+
+        # Devolver el título correspondiente al idioma activo
+        if current_language == 'es':
+            return str(self.titulo_es)
+        elif current_language == 'en':
+            return str(self.titulo_en)
 
 
 # class ContenedorConFondo (models.Model):
-#     titulo = models.CharField(max_length=50)
-#     descripcion = models.CharField(max_length=500)
+#     titulo_es = models.CharField(max_length=50)
+#     descripcion_es = models.CharField(max_length=500)
 #     foto = models.FileField(upload_to='images/', max_length=500)
 
-# class ContenedorConFondoSoloTitulo (models.Model):
-#     titulo = models.CharField(max_length=50)
+# class ContenedorConFondoSolotitulo_es (models.Model):
+#     titulo_es = models.CharField(max_length=50)
 #     foto = models.FileField(upload_to='images/', max_length=500)
 
 # class ContenedorICM (models.Model):
-#     titulo = models.CharField(max_length=50)
-#     encabezado = models.CharField(max_length=50)
-#     descripcion = models.CharField(max_length=500)
+#     titulo_es = models.CharField(max_length=50)
+#     encabezado_es = models.CharField(max_length=50)
+#     descripcion_es = models.CharField(max_length=500)
 #     enlace = models.URLField(max_length=200)
 #     foto = models.FileField(upload_to='images/', max_length=500)
 #     color_de_fondo = models.CharField(max_length=7)
@@ -212,7 +335,7 @@ class BannerPrincipal(models.Model):
         verbose_name_plural = "Banner Principal"
     CONTENEDOR_CHOICES = [
         ('ContenedorConFondo', 'Tipo 1'),
-        ('ContenedorConFondoSoloTitulo', 'Tipo 2'),
+        ('ContenedorConFondoSolotitulo_es', 'Tipo 2'),
         ('ContenedorICM', 'Tipo 3'),
         ('Evento', 'Contenedor: Evento'),
         ('Acontecimiento', 'Contenedor: Acontecimiento'),
@@ -234,10 +357,13 @@ class BannerPrincipal(models.Model):
         ('0d032b', 'malva'),
         ('ed8500', 'naranja'),
     ]
-    titulo = RichTextField(config_name = 'small', blank=True, null=True)
-    encabezado = RichTextField(config_name = 'small', blank=True, null=True)
-    descripcion = RichTextField(blank=True, null=True)
-    foto = models.FileField(upload_to='images/', null=True, max_length=500)
+    titulo_es = RichTextField(config_name = 'small', blank=False, null=False)
+    titulo_en = RichTextField(config_name='small', blank=False, null=False)
+    descripcion_en = RichTextField(blank=False, null=False)
+    encabezado_es = RichTextField(config_name = 'small', blank=False, null=False)
+    encabezado_en = RichTextField(config_name = 'small', blank=False, null=False)
+    descripcion_es = RichTextField(blank=False, null=False)
+    foto = models.FileField(upload_to='images/', max_length=500, null=True)
 
 
 
@@ -245,89 +371,111 @@ class BannerPrincipal(models.Model):
 
 
 
-    color_de_fondo = models.CharField(max_length=7, choices=TEXT_COLOR_CHOICES, null=True)
+
+    color_de_fondo = models.CharField(max_length=7, choices=TEXT_COLOR_CHOICES, null=True,default='#ffffff')
     numero_unico = models.PositiveIntegerField(unique=True, blank=False, null=False)
 
+
+
     def __str__(self):
-        if self.seleccionar_efemeride and self.seleccionar_efemeride.titulo:
-            return str(self.seleccionar_efemeride.titulo)
-        elif self.seleccionar_acontecimiento and self.seleccionar_acontecimiento.titulo:
-            return str(self.seleccionar_acontecimiento.titulo)
-        elif self.seleccionar_evento and self.seleccionar_evento.titulo:
-            return str(self.seleccionar_evento.titulo)
-        else:
-            return str(self.titulo)
+        current_language = translation.get_language()
+
+        # Devolver el título correspondiente al idioma activo
+        if current_language == 'es':
+            if self.seleccionar_efemeride and self.seleccionar_efemeride.titulo_es:
+                return str(self.seleccionar_efemeride.titulo_es)
+            elif self.seleccionar_acontecimiento and self.seleccionar_acontecimiento.titulo_es:
+                return str(self.seleccionar_acontecimiento.titulo_es)
+            elif self.seleccionar_evento and self.seleccionar_evento.titulo_es:
+                return str(self.seleccionar_evento.titulo_es)
+            else:
+                return str(self.titulo_es)
+
+        elif current_language == 'en':
+            if self.seleccionar_efemeride and self.seleccionar_efemeride.titulo_en:
+                return str(self.seleccionar_efemeride.titulo_en)
+            elif self.seleccionar_acontecimiento and self.seleccionar_acontecimiento.titulo_en:
+                return str(self.seleccionar_acontecimiento.titulo_en)
+            elif self.seleccionar_evento and self.seleccionar_evento.titulo_en:
+                return str(self.seleccionar_evento.titulo_en)
+            else:
+                return str(self.titulo_en)
 
     def save(self, *args, **kwargs):
         current_language = get_language()
         if self.seleccionar_efemeride:
             efemeride = self.seleccionar_efemeride
             if current_language == 'en':
-                self.titulo_en = efemeride.titulo_en
-                self.descripcion_en = efemeride.descripcion_en
-                self.encabezado_en = efemeride.encabezado_en
+                self.titulo_es_en = efemeride.titulo_es_en
+                self.descripcion_es_en = efemeride.descripcion_es_en
+                self.encabezado_es_en = efemeride.encabezado_es_en
             elif current_language == 'es':
-                self.titulo_es = efemeride.titulo_es
-                self.descripcion_es = efemeride.descripcion_es
-                self.encabezado_es = efemeride.encabezado_es
+                self.titulo_es_es = efemeride.titulo_es_es
+                self.descripcion_es_es = efemeride.descripcion_es_es
+                self.encabezado_es_es = efemeride.encabezado_es_es
             self.foto = efemeride.foto
             self.color_de_fondo = efemeride.color_de_fondo
 
         elif self.seleccionar_acontecimiento:
             acontecimiento = self.seleccionar_acontecimiento
             if current_language == 'en':
-                self.titulo_en = acontecimiento.titulo_en
-                self.descripcion_en = acontecimiento.descripcion_en
-                self.encabezado_en = acontecimiento.encabezado_en
+                self.titulo_es_en = acontecimiento.titulo_es_en
+                self.descripcion_es_en = acontecimiento.descripcion_es_en
+                self.encabezado_es_en = acontecimiento.encabezado_es_en
             elif current_language == 'es':
-                self.titulo_es = acontecimiento.titulo_es
-                self.descripcion_es = acontecimiento.descripcion_es
-                self.encabezado_es = acontecimiento.encabezado_es
+                self.titulo_es_es = acontecimiento.titulo_es_es
+                self.descripcion_es_es = acontecimiento.descripcion_es_es
+                self.encabezado_es_es = acontecimiento.encabezado_es_es
             self.foto = acontecimiento.foto
             self.color_de_fondo = acontecimiento.color_de_fondo
 
         elif self.seleccionar_evento:
             evento = self.seleccionar_evento
             if current_language == 'en':
-                self.titulo_en = evento.titulo_en
-                self.descripcion_en = evento.descripcion_en
-                self.encabezado_en = evento.encabezado_en
+                self.titulo_es_en = evento.titulo_es_en
+                self.descripcion_es_en = evento.descripcion_es_en
+                self.encabezado_es_en = evento.encabezado_es_en
             elif current_language == 'es':
-                self.titulo_es = evento.titulo_es
-                self.descripcion_es = evento.descripcion_es
-                self.encabezado_es = evento.encabezado_es
+                self.titulo_es_es = evento.titulo_es_es
+                self.descripcion_es_es = evento.descripcion_es_es
+                self.encabezado_es_es = evento.encabezado_es_es
             self.foto = evento.foto
             self.color_de_fondo = evento.color_de_fondo
 
         else:
-            self.foto.name = self.normalize_file_name(self.foto.name, 'images/')
-            if self.foto and not self.imagen_portada_exists():
-                super(BannerPrincipal, self).save()
-            else:
-                self.foto = self.get_upload_path(self.foto.name, 'images/')  # Avoid saving the file again
+            if hasattr(self, 'foto') and self.foto:
+            # Normaliza el nombre del archivo sin alterar la ruta de guardado
+                normalized_name = self.normalize_file_name(self.foto.name)
+                # Construye la ruta completa donde se guardaría la imagen
+                file_path = self.get_upload_path(normalized_name)
 
+                if default_storage.exists(file_path):
+                    # Si el archivo ya existe, reutiliza la misma ruta
+                    self.foto = file_path
+                else:
+                    # Si el archivo no existe, procede con el guardado normal
+                    self.foto = file_path
+                    super(BannerPrincipal, self).save(*args, **kwargs)
+                    return  # Sal del método después de guardar para evitar llamadas duplicadas a save()
 
-
-            # Always save the instance even if the files are not updated
+            # Si no hay foto o el atributo 'foto' no existe, o el archivo ya existe y no necesita ser guardado de nuevo
             super(BannerPrincipal, self).save(*args, **kwargs)
 
-    def imagen_portada_exists(self):
-        return default_storage.exists(self.get_upload_path(self.foto.name, 'images/'))
-
-    def get_upload_path(self, filename, path):
+    def normalize_file_name(self, filename):
         """
-        Construct the full file path within the media directory
+        Normaliza y limpia los nombres de los archivos para coincidir con cómo Django los manejaría en la carga.
         """
-        return os.path.join(path, filename)
-
-    def normalize_file_name(self, filename, path):
-        """
-        Normalize and possibly clean up file names to match how Django would handle them on upload.
-        """
-        # You might want to further enhance this normalization
         base, ext = os.path.splitext(filename)
         return slugify(base) + ext.lower()
 
+    def get_upload_path(self, filename):
+        """
+        Construye la ruta de carga basada en el directorio 'images/'
+        """
+        # Asegúrate de que filename no comienza con una barra
+        if filename.startswith('images'):
+            filename = filename[6:]
+        return os.path.join('images/', filename)
 
 
 
@@ -360,10 +508,13 @@ class Evento (ImageManagementMixin):
     class Meta:
         verbose_name_plural = "Eventos"
 
-    titulo = RichTextField(config_name = 'small', blank=False, null=False)
+    titulo_es = RichTextField(config_name = 'small', blank=False, null=False)
+    titulo_en = RichTextField(config_name='small', blank=False, null=False)
+    descripcion_en = RichTextField(blank=False, null=False)
     fecha = models.DateField()
-    encabezado = RichTextField(blank=False, null=False)
-    descripcion = RichTextField(blank=False, null=False)
+    encabezado_es = RichTextField(blank=False, null=False)
+    encabezado_en = RichTextField(blank=False, null=False)
+    descripcion_es = RichTextField(blank=False, null=False)
     enlace = models.URLField(max_length=200,blank=False, null=False)
     hora = models.TimeField(blank=False, null=False)
 
@@ -389,16 +540,26 @@ class Evento (ImageManagementMixin):
 
 
 
+
     def __str__(self):
-        return str(self.titulo)
+        # Obtener el idioma actualmente activo
+        current_language = translation.get_language()
+
+        # Devolver el título correspondiente al idioma activo
+        if current_language == 'es':
+            return str(self.titulo_es)
+        elif current_language == 'en':
+            return str(self.titulo_en)
 
 
 class Historia_de_la_Institución (ImageManagementMixin):
     class Meta:
         verbose_name_plural = "Historia de la Institución"
-    titulo = RichTextField(config_name = 'small', blank=False, null=False)
-    descripcion = RichTextField(blank=False, null=False)
-    foto = models.FileField(upload_to='images/', max_length=500,blank=True, null=True)
+    titulo_es = RichTextField(config_name = 'small', blank=False, null=False)
+    descripcion_es = RichTextField(blank=False, null=False)
+    titulo_en = RichTextField(config_name='small', blank=False, null=False)
+    descripcion_en = RichTextField(blank=False, null=False)
+    foto = models.FileField(upload_to='images/', max_length=500,blank=False, null=False)
 
     TEXT_COLOR_CHOICES = [
         ('#000000', 'negro'),
@@ -411,20 +572,28 @@ class Historia_de_la_Institución (ImageManagementMixin):
     ]
     color_de_fondo = models.CharField(max_length=7,choices=TEXT_COLOR_CHOICES, default='#ffffff', null=True)
 
-    def get_foto_url(self):
-        if self.foto and hasattr(self.foto, 'url'):
-            return 'https://back.dcubamusica.cult.cu/public/' + self.foto.url
+
+
 
 
 
     def __str__(self):
-        return str(self.titulo)
+        # Obtener el idioma actualmente activo
+        current_language = translation.get_language()
+
+        # Devolver el título correspondiente al idioma activo
+        if current_language == 'es':
+            return str(self.titulo_es)
+        elif current_language == 'en':
+            return str(self.titulo_en)
 
 class Centros_y_Empresas (models.Model):
     class Meta:
         verbose_name_plural = "Centros y Empresas"
-    nombre = RichTextField(config_name = 'small', blank=False, null=False)
-    dirección = models.CharField(max_length=500,blank=False, null=False)
+    nombre_es = RichTextField(config_name = 'small', blank=False, null=False)
+    nombre_en = RichTextField(config_name = 'small', blank=False, null=False)
+    dirección_es = models.CharField(max_length=500,blank=False, null=False)
+    dirección_en = models.CharField(max_length=500,blank=False, null=False)
     télefono = models.CharField(max_length=20,blank=False, null=False)
     correo = models.EmailField(max_length=500,blank=False, null=False)
 
@@ -439,15 +608,25 @@ class Centros_y_Empresas (models.Model):
     ]
 
     def __str__(self):
-        return str(self.nombre)
+        # Obtener el idioma actualmente activo
+        current_language = translation.get_language()
+
+        # Devolver el título correspondiente al idioma activo
+        if current_language == 'es':
+            return str(self.nombre_es)
+        elif current_language == 'en':
+            return str(self.nombre_en)
 
 class Directores(ImageManagementMixin):
     class Meta:
         verbose_name_plural = "Directores"
 
-    nombre = RichTextField(config_name='small', blank=False, null=False)
+    nombre_es = RichTextField(config_name='small', blank=False, null=False)
     foto = models.FileField(upload_to='images/', default='blank.webp', blank=True,null=True)
-    cargo = models.CharField(max_length=500, blank=False, null=False)
+    cargo_es = models.CharField(max_length=500, blank=False, null=False)
+    nombre_en = RichTextField(config_name='small', blank=False, null=False)
+
+    cargo_en = models.CharField(max_length=500, blank=False, null=False)
     télefono = models.CharField(max_length=20, blank=False, null=False)  # Corregido 'télefono' por 'telefono'
     correo = models.EmailField(blank=False, null=False)
     consejo_de_dirección = models.BooleanField(default=False, blank=True,null=True)  # Cambiado 'null=False' por 'default=False'
@@ -459,16 +638,27 @@ class Directores(ImageManagementMixin):
         return self.foto.url if self.foto else 'https://back.dcubamusica.cult.cu/public/images/blank.webp'
 
     def __str__(self):
-        return str(self.nombre)
+        # Obtener el idioma actualmente activo
+        current_language = translation.get_language()
+
+        # Devolver el título correspondiente al idioma activo
+        if current_language == 'es':
+            return str(self.nombre_es)
+        elif current_language == 'en':
+            return str(self.nombre_en)
 
 class Premio_Nacional_de_Música (ImageManagementMixin):
     class Meta:
         verbose_name_plural = "Premio Nacional de Música"
-    titulo = RichTextField(config_name = 'small', blank=False, null=False)
+    titulo_es = RichTextField(config_name = 'small', blank=False, null=False)
+    titulo_en = RichTextField(config_name='small', blank=False, null=False)
+    descripcion_en = RichTextField(blank=False, null=False)
     año = models.IntegerField(blank = False, null=False)
-    descripcion = RichTextField(blank=False, null=False)
-    bibliografía = RichTextField(config_name = 'small', blank=True, null=True)
-    foto = models.FileField(upload_to='images/', max_length=500, blank=True, null=True)
+    descripcion_es = RichTextField(blank=False, null=False)
+    bibliografía_es = RichTextField(config_name = 'small', blank=False, null=False)
+    bibliografía_en = RichTextField(config_name = 'small', blank=False, null=False)
+
+    foto = models.FileField(upload_to='images/', max_length=500, blank=False, null=False)
 
 
     TEXT_COLOR_CHOICES = [
@@ -483,21 +673,30 @@ class Premio_Nacional_de_Música (ImageManagementMixin):
 
     color_de_fondo = models.CharField(max_length=7,choices=TEXT_COLOR_CHOICES, default='#ffffff', null=True)
 
-    def get_foto_url(self):
-        if self.foto and hasattr(self.foto, 'url'):
-            return 'https://back.dcubamusica.cult.cu/public/' + self.foto.url
+
+
 
     def __str__(self):
-        return str(self.titulo)
+        # Obtener el idioma actualmente activo
+        current_language = translation.get_language()
+
+        # Devolver el título correspondiente al idioma activo
+        if current_language == 'es':
+            return str(self.titulo_es)
+        elif current_language == 'en':
+            return str(self.titulo_en)
 
 class Acontecimiento (ImageManagementMixin):
     class Meta:
         verbose_name_plural = "Acontecimientos"
 
-    titulo = RichTextField(config_name = 'small', blank=False, null=False)
+    titulo_es = RichTextField(config_name = 'small', blank=False, null=False)
+    titulo_en = RichTextField(config_name='small', blank=False, null=False)
+    descripcion_en = RichTextField(blank=False, null=False)
     fecha = models.DateField(blank=False, null=False)
-    encabezado = RichTextField(blank=False, null=False)
-    descripcion = RichTextField(blank=False, null=False)
+    encabezado_es = RichTextField(blank=False, null=False)
+    encabezado_en = RichTextField(blank=False, null=False)
+    descripcion_es = RichTextField(blank=False, null=False)
     enlace = models.URLField(max_length=200, blank=False, null=False)
 
     TEXT_COLOR_CHOICES = [
@@ -512,28 +711,35 @@ class Acontecimiento (ImageManagementMixin):
     color_de_fondo = models.CharField(max_length=7,choices=TEXT_COLOR_CHOICES, default='#ffffff', null=True)
     foto = models.FileField(upload_to='images/', max_length=500, blank=False, null=False)
 
-    def get_foto_url(self):
-        if self.foto and hasattr(self.foto, 'url'):
-            return 'https://back.dcubamusica.cult.cu/public/' + self.foto.url
+
+
 
     def __str__(self):
-        return str(self.titulo)
+        # Obtener el idioma actualmente activo
+        current_language = translation.get_language()
+
+        # Devolver el título correspondiente al idioma activo
+        if current_language == 'es':
+            return str(self.titulo_es)
+        elif current_language == 'en':
+            return str(self.titulo_en)
 
 
 class Multimedia (ImageManagementMixin):
     class Meta:
         verbose_name_plural = "Multimedias"
-    titulo = RichTextField(config_name = 'small', blank=False, null=False)
+    titulo_es = RichTextField(config_name = 'small', blank=False, null=False)
 
-    descripcion = RichTextField(blank=False, null=False)
+    descripcion_es = RichTextField(blank=False, null=False)
+    titulo_en = RichTextField(config_name='small', blank=False, null=False)
+    descripcion_en = RichTextField(blank=False, null=False)
+
     tipo = models.CharField(max_length=500)
-    enlace = models.URLField(max_length=200,blank=True, null=True)
-    archivo = models.FileField(upload_to='multimedias/', blank=True, null=True)
-    foto = models.FileField(upload_to='multimedias/', max_length=500,blank=True, null=True)
+    enlace = models.URLField(max_length=200,blank=False, null=False)
+    archivo = models.FileField(upload_to='multimedias/', blank=False, null=False)
+    foto = models.FileField(upload_to='multimedias/', max_length=500,blank=False, null=False)
 
-    def get_foto_url(self):
-        if self.foto and hasattr(self.foto, 'url'):
-            return 'https://back.dcubamusica.cult.cu/public/' + self.foto.url
+
 
 
     TEXT_COLOR_CHOICES = [
@@ -548,16 +754,28 @@ class Multimedia (ImageManagementMixin):
 
     color_de_fondo = models.CharField(max_length=7,choices=TEXT_COLOR_CHOICES, default='#ffffff', null=True)
 
+
     def __str__(self):
-        return str(self.titulo)
+        # Obtener el idioma actualmente activo
+        current_language = translation.get_language()
+
+        # Devolver el título correspondiente al idioma activo
+        if current_language == 'es':
+            return str(self.titulo_es)
+        elif current_language == 'en':
+            return str(self.titulo_en)
 
 class Efemerides (ImageManagementMixin):
     class Meta:
         verbose_name_plural = "Efemérides"
-    titulo = RichTextField(config_name = 'small', blank=False, null=False)
+    titulo_es = RichTextField(config_name = 'small', blank=False, null=False)
+    titulo_en = RichTextField(config_name='small', blank=False, null=False)
+    descripcion_en = RichTextField(blank=False, null=False)
+
+    encabezado_en = RichTextField(blank=False, null=False)
     fecha = models.DateField(blank=False, null=False)
-    encabezado = RichTextField(blank=False, null=False)
-    descripcion = RichTextField(blank=False, null=False)
+    encabezado_es = RichTextField(blank=False, null=False)
+    descripcion_es = RichTextField(blank=False, null=False)
 
     TEXT_COLOR_CHOICES = [
         ('#000000', 'negro'),
@@ -569,25 +787,40 @@ class Efemerides (ImageManagementMixin):
         ('ed8500', 'naranja'),
     ]
     color_de_fondo = models.CharField(max_length=7,choices=TEXT_COLOR_CHOICES, default='#ffffff', null=True)
-    foto = models.FileField(upload_to='images/', max_length=500, blank=True, null=True)
+    foto = models.FileField(upload_to='images/', max_length=500, blank=False, null=False)
 
-    def get_foto_url(self):
-        if self.foto and hasattr(self.foto, 'url'):
-            return 'https://back.dcubamusica.cult.cu/public/' + self.foto.url
+
+
 
 
     def __str__(self):
-        return str(self.titulo)
+        # Obtener el idioma actualmente activo
+        current_language = translation.get_language()
+
+        # Devolver el título correspondiente al idioma activo
+        if current_language == 'es':
+            return str(self.titulo_es)
+        elif current_language == 'en':
+            return str(self.titulo_en)
 
 
 
 class Redes (ImageManagementMixin):
     class Meta:
         verbose_name_plural = "Redes"
-    titulo = RichTextField(config_name = 'small', blank=False, null=False)
-    enlace = models.URLField(max_length=200,blank=True, null=True)
-    foto = models.FileField(upload_to='redes/', max_length=500,blank=True, null=True)
+    titulo_es = RichTextField(config_name = 'small', blank=False, null=False)
+    titulo_en = RichTextField(config_name='small', blank=False, null=False)
+    enlace = models.URLField(max_length=200,blank=False, null=False)
+    foto = models.FileField(upload_to='redes/', max_length=500,blank=False, null=False)
+
 
 
     def __str__(self):
-        return str(self.titulo)
+        # Obtener el idioma actualmente activo
+        current_language = translation.get_language()
+
+        # Devolver el título correspondiente al idioma activo
+        if current_language == 'es':
+            return str(self.titulo_es)
+        elif current_language == 'en':
+            return str(self.titulo_en)

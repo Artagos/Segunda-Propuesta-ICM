@@ -30,10 +30,13 @@ class BannerPrincipalForm1(forms.ModelForm):
 
         # Ajustar los campos de idioma para ser obligatorios solo si están en el idioma actual
         for field_name in self.fields:
-            if field_name.endswith(f'_{current_language}'):
-                self.fields[field_name].required = True
-            else:
-                self.fields[field_name].required = False
+            if field_name.endswith('_en') or field_name.endswith('_es'):
+                    # Habilitar solo los campos del idioma actual
+
+                if field_name.endswith(f'_{current_language}'):
+                    self.fields[field_name].required = True
+                elif not field_name.endswith(f'_{current_language}'):
+                    self.fields[field_name].required = False
         # Cambiar las etiquetas
         self.fields['titulo_en'].label = 'Title'
         self.fields['titulo_es'].label = 'Título'
