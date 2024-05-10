@@ -66,7 +66,9 @@ class ImageManagementMixinBanner(models.Model):
         """
         Normaliza y limpia los nombres de los archivos para coincidir con cómo Django los manejaría en la carga.
         """
-        base, ext = os.path.splitext(filename)
+        # Extrae el nombre del archivo de la ruta completa
+        base_name = os.path.basename(filename)
+        base, ext = os.path.splitext(base_name)
         return slugify(base) + ext.lower()
 
     def get_upload_path(self, filename):
@@ -107,7 +109,9 @@ class ImageManagementMixin(models.Model):
         """
         Normaliza y limpia los nombres de los archivos para coincidir con cómo Django los manejaría en la carga.
         """
-        base, ext = os.path.splitext(filename)
+        # Extrae el nombre del archivo de la ruta completa
+        base_name = os.path.basename(filename)
+        base, ext = os.path.splitext(base_name)
         return slugify(base) + ext.lower()
 
     def get_upload_path(self, filename):
@@ -178,13 +182,13 @@ class Revista(models.Model):
             return str(self.titulo_en)
 
     def save(self, *args, **kwargs):
-        self.imagen_portada.name = self.normalize_file_name(self.imagen_portada.name, 'images/')
+        self.imagen_portada.name = self.normalize_file_name(self.imagen_portada.name)
         if self.imagen_portada and not self.imagen_portada_exists():
             super(Revista, self).save()
         else:
             self.imagen_portada = self.get_upload_path(self.imagen_portada.name, 'images/')  # Avoid saving the file again
 
-        self.pdf.name = self.normalize_file_name(self.pdf.name, 'pdfs/')
+        self.pdf.name = self.normalize_file_name(self.pdf.name)
         if self.pdf and not self.pdf_exists():
             super(Revista, self).save()
         else:
@@ -193,12 +197,13 @@ class Revista(models.Model):
         # Always save the instance even if the files are not updated
         super(Revista, self).save(*args, **kwargs)
 
-    def normalize_file_name(self, filename, path):
+    def normalize_file_name(self, filename):
         """
-        Normalize and possibly clean up file names to match how Django would handle them on upload.
+        Normaliza y limpia los nombres de los archivos para coincidir con cómo Django los manejaría en la carga.
         """
-        # You might want to further enhance this normalization
-        base, ext = os.path.splitext(filename)
+        # Extrae el nombre del archivo de la ruta completa
+        base_name = os.path.basename(filename)
+        base, ext = os.path.splitext(base_name)
         return slugify(base) + ext.lower()
 
     def imagen_portada_exists(self):
@@ -264,17 +269,18 @@ class Podcast(models.Model):
     def save(self, *args, **kwargs):
         # Check and set for image
         if self.foto:
-            self.foto.name = self.normalize_file_name(self.foto.name, 'images/')
+            self.foto.name = self.normalize_file_name(self.foto.name)
             if not self.file_exists(self.foto.name, 'images/'):
-                super(Podcast, self).save()
+                super(Podcast, self).save(*args, **kwargs)
             else:
                 self.foto = self.get_upload_path(self.foto.name, 'images/')
 
         # Check and set for mp3
         if self.archivo_local:
-            self.archivo_local.name = self.normalize_file_name(self.archivo_local.name, 'podcast/')
+            self.archivo_local.name = self.normalize_file_name(self.archivo_local.name)
             if not self.file_exists(self.archivo_local.name, 'podcast/'):
-                super(Podcast, self).save()
+                # super(Podcast, self).save(*args, **kwargs)
+                pass
             else:
                 self.archivo_local = self.get_upload_path(self.archivo_local.name, 'podcast/')
 
@@ -288,12 +294,13 @@ class Podcast(models.Model):
     def get_upload_path(self, filename, path):
         return os.path.join(path, filename)
 
-    def normalize_file_name(self, filename, path):
+    def normalize_file_name(self, filename):
         """
-        Normalize and possibly clean up file names to match how Django would handle them on upload.
+        Normaliza y limpia los nombres de los archivos para coincidir con cómo Django los manejaría en la carga.
         """
-        # You might want to further enhance this normalization
-        base, ext = os.path.splitext(filename)
+        # Extrae el nombre del archivo de la ruta completa
+        base_name = os.path.basename(filename)
+        base, ext = os.path.splitext(base_name)
         return slugify(base) + ext.lower()
 
 
@@ -406,41 +413,47 @@ class BannerPrincipal(models.Model):
         if self.seleccionar_efemeride:
             efemeride = self.seleccionar_efemeride
             if current_language == 'en':
-                self.titulo_es_en = efemeride.titulo_es_en
-                self.descripcion_es_en = efemeride.descripcion_es_en
-                self.encabezado_es_en = efemeride.encabezado_es_en
+                self.titulo_en = efemeride.titulo_en
+                self.descripcion_en = efemeride.descripcion_en
+                self.encabezado_en = efemeride.encabezado_en
             elif current_language == 'es':
-                self.titulo_es_es = efemeride.titulo_es_es
-                self.descripcion_es_es = efemeride.descripcion_es_es
-                self.encabezado_es_es = efemeride.encabezado_es_es
+                self.titulo_es = efemeride.titulo_es
+                self.descripcion_es = efemeride.descripcion_es
+                self.encabezado_es = efemeride.encabezado_es
             self.foto = efemeride.foto
             self.color_de_fondo = efemeride.color_de_fondo
+
+            super().save(*args, **kwargs)
 
         elif self.seleccionar_acontecimiento:
             acontecimiento = self.seleccionar_acontecimiento
             if current_language == 'en':
-                self.titulo_es_en = acontecimiento.titulo_es_en
-                self.descripcion_es_en = acontecimiento.descripcion_es_en
-                self.encabezado_es_en = acontecimiento.encabezado_es_en
+                self.titulo_en = acontecimiento.titulo_en
+                self.descripcion_en = acontecimiento.descripcion_en
+                self.encabezado_en = acontecimiento.encabezado_en
             elif current_language == 'es':
-                self.titulo_es_es = acontecimiento.titulo_es_es
-                self.descripcion_es_es = acontecimiento.descripcion_es_es
-                self.encabezado_es_es = acontecimiento.encabezado_es_es
+                self.titulo_es = acontecimiento.titulo_es
+                self.descripcion_es = acontecimiento.descripcion_es
+                self.encabezado_es = acontecimiento.encabezado_es
             self.foto = acontecimiento.foto
             self.color_de_fondo = acontecimiento.color_de_fondo
+
+            super().save(*args, **kwargs)
 
         elif self.seleccionar_evento:
             evento = self.seleccionar_evento
             if current_language == 'en':
-                self.titulo_es_en = evento.titulo_es_en
-                self.descripcion_es_en = evento.descripcion_es_en
-                self.encabezado_es_en = evento.encabezado_es_en
+                self.titulo_en = evento.titulo_en
+                self.descripcion_en = evento.descripcion_en
+                self.encabezado_en = evento.encabezado_en
             elif current_language == 'es':
-                self.titulo_es_es = evento.titulo_es_es
-                self.descripcion_es_es = evento.descripcion_es_es
-                self.encabezado_es_es = evento.encabezado_es_es
+                self.titulo_es = evento.titulo_es
+                self.descripcion_es = evento.descripcion_es
+                self.encabezado_es = evento.encabezado_es
             self.foto = evento.foto
             self.color_de_fondo = evento.color_de_fondo
+
+            super().save(*args, **kwargs)
 
         else:
             if hasattr(self, 'foto') and self.foto:
@@ -459,7 +472,8 @@ class BannerPrincipal(models.Model):
                     return  # Sal del método después de guardar para evitar llamadas duplicadas a save()
 
             # Si no hay foto o el atributo 'foto' no existe, o el archivo ya existe y no necesita ser guardado de nuevo
-            super(BannerPrincipal, self).save(*args, **kwargs)
+                super(BannerPrincipal, self).save(*args, **kwargs)
+
 
     def normalize_file_name(self, filename):
         """
