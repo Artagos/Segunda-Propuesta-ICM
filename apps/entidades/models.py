@@ -95,10 +95,10 @@ class ImageManagementMixin(models.Model):
 
             if default_storage.exists(file_path):
                 # Si el archivo ya existe, reutiliza la misma ruta
-                self.foto = file_path
+                self.foto = 'images/' + self.foto.name
             else:
                 # Si el archivo no existe, procede con el guardado normal
-                self.foto = file_path
+                self.foto = 'images/' + self.foto.name
                 super(ImageManagementMixin, self).save(*args, **kwargs)
                 return  # Sal del método después de guardar para evitar llamadas duplicadas a save()
 
@@ -120,6 +120,70 @@ class ImageManagementMixin(models.Model):
         """
         return os.path.join('images/', filename)
 
+
+
+
+class ImageManagementMixinRevista(models.Model):
+    """
+    Mixin para manejar la verificación y reutilización de archivos de imágenes existentes.
+    """
+    class Meta:
+        abstract = True
+
+    def save(self, *args, **kwargs):
+        # Este método asume que el campo de la imagen se llama 'foto'
+        if hasattr(self, 'imagen_portada') and self.imagen_portada:
+            # Normaliza el nombre del archivo sin alterar la ruta de guardado
+            normalized_name = self.normalize_file_name(self.imagen_portada.name)
+            # Construye la ruta completa donde se guardaría la imagen
+            file_path = self.get_upload_path(normalized_name)
+
+            if default_storage.exists(file_path):
+                # Si el archivo ya existe, reutiliza la misma ruta
+                self.imagen_portada = 'images/' + self.imagen_portada.name
+            else:
+                # Si el archivo no existe, procede con el guardado normal
+                self.imagen_portada = 'images/' + self.imagen_portada.name
+                super(ImageManagementMixinRevista, self).save(*args, **kwargs)
+                return  # Sal del método después de guardar para evitar llamadas duplicadas a save()
+
+        if hasattr(self, 'pdf') and self.pdf:
+            normalized_name = self.normalize_file_name(self.pdf.name)
+            # Construye la ruta completa donde se guardaría la imagen
+            file_path = self.get_upload_path2(normalized_name)
+
+            if default_storage.exists(file_path):
+                # Si el archivo ya existe, reutiliza la misma ruta
+                self.pdf = 'pdfs/' + self.pdf.name
+            else:
+                # Si el archivo no existe, procede con el guardado normal
+                self.pdf = 'pdfs/' + self.pdf.name
+                super(ImageManagementMixinRevista, self).save(*args, **kwargs)
+                return
+
+        # Si no hay foto o el atributo 'foto' no existe, o el archivo ya existe y no necesita ser guardado de nuevo
+        super(ImageManagementMixinRevista, self).save(*args, **kwargs)
+
+    def normalize_file_name(self, filename):
+        """
+        Normaliza y limpia los nombres de los archivos para coincidir con cómo Django los manejaría en la carga.
+        """
+        # Extrae el nombre del archivo de la ruta completa
+        base_name = os.path.basename(filename)
+        base, ext = os.path.splitext(base_name)
+        return slugify(base) + ext.lower()
+
+    def get_upload_path(self, filename):
+        """
+        Construye la ruta de carga basada en el directorio 'images/'
+        """
+        return os.path.join('images/', filename)
+
+    def get_upload_path2(self, filename):
+        """
+        Construye la ruta de carga basada en el directorio 'images/'
+        """
+        return os.path.join('pdfs/', filename)
 
 # class ImageManagementMixin(models.Model):
 #     """
@@ -161,7 +225,7 @@ class ImageManagementMixin(models.Model):
 #         return os.path.join('images/', filename)
 
 
-class Revista(models.Model):
+class Revista(ImageManagementMixinRevista):
     titulo_es = RichTextField(config_name='small', blank=False, null=False)
     descripcion_es = RichTextField(blank=False, null=False)
     titulo_en = RichTextField(default= 'a',config_name='small', blank=False, null=False)
@@ -181,42 +245,61 @@ class Revista(models.Model):
         elif current_language == 'en':
             return str(self.titulo_en)
 
-    def save(self, *args, **kwargs):
-        self.imagen_portada.name = self.normalize_file_name(self.imagen_portada.name)
-        if self.imagen_portada and not self.imagen_portada_exists():
-            super(Revista, self).save()
-        else:
-            self.imagen_portada = self.get_upload_path(self.imagen_portada.name, 'images/')  # Avoid saving the file again
+    # # def save(self, *args, **kwargs):
+    # #     self.imagen_portada = 'images/' + self.imagen_portada.name
+    # #     if self.imagen_portada and not self.imagen_portada_exists():
+    # #         super(Revista, self).save()
+    # #     else:
+    # #         self.imagen_portada = 'images/' + self.imagen_portada.name # Avoid saving the file again
 
-        self.pdf.name = self.normalize_file_name(self.pdf.name)
-        if self.pdf and not self.pdf_exists():
-            super(Revista, self).save()
-        else:
-            self.pdf = self.get_upload_path(self.pdf.name, 'pdfs/')  # Avoid saving the file again
+    # #     normalized_name = self.normalize_file_name(self.pdf.name)
+    # #         # Construye la ruta completa donde se guardaría la imagen
+    # #     file_path = self.get_upload_path2(normalized_name)
 
-        # Always save the instance even if the files are not updated
-        super(Revista, self).save(*args, **kwargs)
+    # #     if default_storage.exists(file_path):
+    # #         # Si el archivo ya existe, reutiliza la misma ruta
+    # #         self.pdf = 'pdfs/' + self.pdf.name
+    # #     else:
+    # #         # Si el archivo no existe, procede con el guardado normal
+    # #         self.pdf = 'pdfs/' + self.pdf.name
+    # #         super(Revista, self).save(*args, **kwargs)
+    # #         return
 
-    def normalize_file_name(self, filename):
-        """
-        Normaliza y limpia los nombres de los archivos para coincidir con cómo Django los manejaría en la carga.
-        """
-        # Extrae el nombre del archivo de la ruta completa
-        base_name = os.path.basename(filename)
-        base, ext = os.path.splitext(base_name)
-        return slugify(base) + ext.lower()
+    # #     # self.pdf = 'pdfs/' + self.pdf.name
+    # #     # if self.pdf and not self.pdf_exists():
+    # #     #     super(Revista, self).save()
+    # #     # else:
+    # #     #     self.pdf = 'pdfs/' + self.pdf.name # Avoid saving the file again
 
-    def imagen_portada_exists(self):
-        return default_storage.exists(self.get_upload_path(self.imagen_portada.name, 'images/'))
+    # #     # Always save the instance even if the files are not updated
+    # #     super(Revista, self).save(*args, **kwargs)
 
-    def pdf_exists(self):
-        return default_storage.exists(self.get_upload_path(self.pdf.name, 'pdfs/'))
+    # def get_upload_path2(self, filename):
+    #     """
+    #     Construye la ruta de carga basada en el directorio 'images/'
+    #     """
+    #     return os.path.join('images/', filename)
 
-    def get_upload_path(self, filename, path):
-        """
-        Construct the full file path within the media directory
-        """
-        return os.path.join(path, filename)
+    # def normalize_file_name(self, filename):
+    #     """
+    #     Normaliza y limpia los nombres de los archivos para coincidir con cómo Django los manejaría en la carga.
+    #     """
+    #     # Extrae el nombre del archivo de la ruta completa
+    #     base_name = os.path.basename(filename)
+    #     base, ext = os.path.splitext(base_name)
+    #     return slugify(base) + ext.lower()
+
+    # def imagen_portada_exists(self):
+    #     return default_storage.exists(self.get_upload_path(self.imagen_portada.name, 'images/'))
+
+    # def pdf_exists(self):
+    #     return default_storage.exists(self.get_upload_path(self.pdf.name, 'pdfs/'))
+
+    # def get_upload_path(self, filename, path):
+    #     """
+    #     Construct the full file path within the media directory
+    #     """
+    #     return os.path.join(path, filename)
 
     # def save(self, *args, **kwargs):
     #     if self.pk:
@@ -464,10 +547,10 @@ class BannerPrincipal(models.Model):
 
                 if default_storage.exists(file_path):
                     # Si el archivo ya existe, reutiliza la misma ruta
-                    self.foto = file_path
+                    self.foto = 'images/' + self.foto.name
                 else:
                     # Si el archivo no existe, procede con el guardado normal
-                    self.foto = file_path
+                    self.foto = 'images/' + self.foto.name
                     super(BannerPrincipal, self).save(*args, **kwargs)
                     return  # Sal del método después de guardar para evitar llamadas duplicadas a save()
 

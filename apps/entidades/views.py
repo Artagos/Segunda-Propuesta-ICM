@@ -57,26 +57,33 @@ def lista_revistas(request):
 
 
 def detalle_revista(request, id):
-    # Intenta obtener los detalles de la revista como un diccionario dado un ID
-    try:
-        revista = Revista.objects.filter(id=id).values('id', 'titulo', 'descripcion', 'imagen_portada', 'pdf').get()
-    except Revista.DoesNotExist:
-        return JsonResponse({'error': 'Revista no encontrada'}, status=404)
 
-    # Construye las URLs de las imágenes y pdfs, si existen
-    foto_url = f'https://back.dcubamusica.cult.cu/public/{revista["imagen_portada"]}' if revista["imagen_portada"] else None
-    pdf_url = f'https://back.dcubamusica.cult.cu/public/{revista["pdf"]}' if revista["pdf"] else None
+    lang = request.GET.get('lang', 'es')
+    with translation.override(lang):
+        current_language = translation.get_language()
+        titulo_field = f'titulo_{current_language}'
+        descripcion_field = f'descripcion_{current_language}'
 
-    # Prepara el diccionario con los datos de la revista actualizados
-    revista_data = {
-        'id': revista['id'],
-        'titulo': revista['titulo'],
-        'descripcion': revista['descripcion'],
-        'foto': foto_url,
-        'pdf': pdf_url,
-    }
+        try:
+            revista = Revista.objects.filter(id=id).values('id', titulo_field, descripcion_field, 'imagen_portada', 'pdf').get()
+        except Revista.DoesNotExist:
+            return JsonResponse({'error': 'Revista no encontrada'}, status=404)
 
-    return JsonResponse(revista_data)
+        foto_url = 'https://back.dcubamusica.cult.cu/public/' + revista.get('imagen_portada', '')
+        pdf_url = 'https://back.dcubamusica.cult.cu/public/' + revista.get('pdf', '')
+        titulo = revista.get(titulo_field, 'Sin título')  # Fallback si falta la traducción
+        descripcion = revista.get(descripcion_field, 'Sin descripción')
+
+        revista_data = {
+            'id': revista['id'],
+            'titulo': titulo,
+            'descripcion': descripcion,
+            'foto': foto_url,
+            'pdf': pdf_url,
+        }
+
+        return JsonResponse(revista_data)
+
 
 # def lista_podcasts(request):
 #     # Obtener el idioma actual
@@ -462,15 +469,17 @@ def get_premios(request):
         current_language = translation.get_language()
         titulo_field = f'titulo_{current_language}'
         descripcion_field = f'descripcion_{current_language}'
+        bibliografía_field = f'bibliografía_{current_language}'
 
         premios = Premio_Nacional_de_Música.objects.order_by('-año').values(
-            'id', 'año', 'foto', 'color_de_fondo', 'bibliografía', titulo_field, descripcion_field
+            'id', 'año', 'foto', 'color_de_fondo', bibliografía_field, titulo_field, descripcion_field
         )
 
         premios_list = []
         for premio in premios:
             titulo = premio.get(titulo_field)
             descripcion = premio.get(descripcion_field, 'Sin descripción')
+            bibliografía = premio.get(bibliografía_field)
 
             if titulo is None or titulo == "":
                 continue
@@ -483,7 +492,7 @@ def get_premios(request):
                 'foto': 'https://back.dcubamusica.cult.cu/public/'+premio.get('foto', ''),
                 'año': premio['año'],
                 'color_de_fondo': premio['color_de_fondo'],
-                'bibliografia': premio['bibliografía'],
+                'bibliografia': bibliografía,
             })
 
     return JsonResponse(premios_list, safe=False)
