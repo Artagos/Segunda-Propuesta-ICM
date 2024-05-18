@@ -153,6 +153,15 @@ class RevistaAdminForm(forms.ModelForm):
         self.fields['descripcion_en'].label = 'Description'
         self.fields['descripcion_es'].label = 'Descripcion'
 
+    def clean_pdf(self):
+        pdf = self.cleaned_data.get('pdf')
+        if pdf:
+            if not pdf.name.endswith('.pdf'):
+                raise forms.ValidationError('El archivo debe ser un PDF.')
+        return pdf
+
+
+
 class EventoAdminForm(forms.ModelForm,TranslationAdmin):
     class Meta:
         model = Evento
