@@ -14,6 +14,10 @@ from django.utils import translation
 
 import os
 
+from .storage import CustomStorage
+
+custom_storage = CustomStorage()
+
 
 
 class ImageManagementMixinBanner(models.Model):
@@ -185,6 +189,70 @@ class ImageManagementMixinRevista(models.Model):
         """
         return os.path.join('pdfs/', filename)
 
+
+
+
+class ImageManagementMixinPodcast(models.Model):
+    """
+    Mixin para manejar la verificación y reutilización de archivos de imágenes existentes.
+    """
+    class Meta:
+        abstract = True
+
+    def save(self, *args, **kwargs):
+        # Este método asume que el campo de la imagen se llama 'foto'
+        if hasattr(self, 'foto') and self.foto:
+            # Normaliza el nombre del archivo sin alterar la ruta de guardado
+            normalized_name = self.normalize_file_name(self.foto.name)
+            # Construye la ruta completa donde se guardaría la imagen
+            file_path = self.get_upload_path(normalized_name)
+
+            if default_storage.exists(file_path):
+                # Si el archivo ya existe, reutiliza la misma ruta
+                self.foto = 'images/' + self.foto.name
+            else:
+                # Si el archivo no existe, procede con el guardado normal
+                self.foto = 'images/' + self.foto.name
+                super(ImageManagementMixinPodcast, self).save(*args, **kwargs)
+                return  # Sal del método después de guardar para evitar llamadas duplicadas a save()
+
+        if hasattr(self, 'archivo_local') and self.archivo_local:
+            normalized_name = self.normalize_file_name(self.archivo_local.name)
+            # Construye la ruta completa donde se guardaría la imagen
+            file_path = self.get_upload_path2(normalized_name)
+
+            if default_storage.exists(file_path):
+                # Si el archivo ya existe, reutiliza la misma ruta
+                self.archivo_local = 'podcast/' + self.archivo_local.name
+            else:
+                # Si el archivo no existe, procede con el guardado normal
+                self.archivo_local = 'podcast/' + self.archivo_local.name
+                super(ImageManagementMixinPodcast, self).save(*args, **kwargs)
+                return
+
+        # Si no hay foto o el atributo 'foto' no existe, o el archivo ya existe y no necesita ser guardado de nuevo
+        super(ImageManagementMixinPodcast, self).save(*args, **kwargs)
+
+    def normalize_file_name(self, filename):
+        """
+        Normaliza y limpia los nombres de los archivos para coincidir con cómo Django los manejaría en la carga.
+        """
+        # Extrae el nombre del archivo de la ruta completa
+        base_name = os.path.basename(filename)
+        base, ext = os.path.splitext(base_name)
+        return slugify(base) + ext.lower()
+
+    def get_upload_path(self, filename):
+        """
+        Construye la ruta de carga basada en el directorio 'images/'
+        """
+        return os.path.join('images/', filename)
+
+    def get_upload_path2(self, filename):
+        """
+        Construye la ruta de carga basada en el directorio 'images/'
+        """
+        return os.path.join('pdfs/', filename)
 # class ImageManagementMixin(models.Model):
 #     """
 #     Mixin para manejar la verificación y reutilización de archivos de imágenes existentes.
@@ -340,7 +408,7 @@ class Revista(ImageManagementMixinRevista):
 
 
 
-class Podcast(models.Model):
+class Podcast(ImageManagementMixinPodcast):
     titulo_es = RichTextField(config_name = 'small',blank=False, null=False)
     descripcion_es = RichTextField(blank=False, null=False)
     titulo_en = RichTextField(config_name='small', blank=False, null=False)
@@ -349,42 +417,42 @@ class Podcast(models.Model):
     archivo_local = models.FileField(upload_to='podcast/', blank=False, null=False,max_length=500)
     foto = models.ImageField(upload_to='images/',blank=False, null=False,max_length=500)
 
-    def save(self, *args, **kwargs):
-        # Check and set for image
-        if self.foto:
-            self.foto.name = self.normalize_file_name(self.foto.name)
-            if not self.file_exists(self.foto.name, 'images/'):
-                super(Podcast, self).save(*args, **kwargs)
-            else:
-                self.foto = self.get_upload_path(self.foto.name, 'images/')
+    # def save(self, *args, **kwargs):
+    #     # Check and set for image
+    #     if self.foto:
+    #         self.foto.name = self.normalize_file_name(self.foto.name)
+    #         if not self.file_exists(self.foto.name, 'images/'):
+    #             super(Podcast, self).save(*args, **kwargs)
+    #         else:
+    #             self.foto = self.get_upload_path(self.foto.name, 'images/')
 
-        # Check and set for mp3
-        if self.archivo_local:
-            self.archivo_local.name = self.normalize_file_name(self.archivo_local.name)
-            if not self.file_exists(self.archivo_local.name, 'podcast/'):
-                # super(Podcast, self).save(*args, **kwargs)
-                pass
-            else:
-                self.archivo_local = self.get_upload_path(self.archivo_local.name, 'podcast/')
+    #     # Check and set for mp3
+    #     if self.archivo_local:
+    #         self.archivo_local.name = self.normalize_file_name(self.archivo_local.name)
+    #         if not self.file_exists(self.archivo_local.name, 'podcast/'):
+    #             # super(Podcast, self).save(*args, **kwargs)
+    #             pass
+    #         else:
+    #             self.archivo_local = self.get_upload_path(self.archivo_local.name, 'podcast/')
 
-        # Always save the instance even if the files are not updated
-        super(Podcast, self).save(*args, **kwargs)
+    #     # Always save the instance even if the files are not updated
+    #     super(Podcast, self).save(*args, **kwargs)
 
-    def file_exists(self, filename, path):
-        full_path = self.get_upload_path(filename, path)
-        return default_storage.exists(full_path)
+    # def file_exists(self, filename, path):
+    #     full_path = self.get_upload_path(filename, path)
+    #     return default_storage.exists(full_path)
 
-    def get_upload_path(self, filename, path):
-        return os.path.join(path, filename)
+    # def get_upload_path(self, filename, path):
+    #     return os.path.join(path, filename)
 
-    def normalize_file_name(self, filename):
-        """
-        Normaliza y limpia los nombres de los archivos para coincidir con cómo Django los manejaría en la carga.
-        """
-        # Extrae el nombre del archivo de la ruta completa
-        base_name = os.path.basename(filename)
-        base, ext = os.path.splitext(base_name)
-        return slugify(base) + ext.lower()
+    # def normalize_file_name(self, filename):
+    #     """
+    #     Normaliza y limpia los nombres de los archivos para coincidir con cómo Django los manejaría en la carga.
+    #     """
+    #     # Extrae el nombre del archivo de la ruta completa
+    #     base_name = os.path.basename(filename)
+    #     base, ext = os.path.splitext(base_name)
+    #     return slugify(base) + ext.lower()
 
 
 
@@ -453,7 +521,7 @@ class BannerPrincipal(models.Model):
     encabezado_es = RichTextField(config_name = 'small', blank=False, null=False)
     encabezado_en = RichTextField(config_name = 'small', blank=False, null=False)
     descripcion_es = RichTextField(blank=False, null=False)
-    foto = models.FileField(upload_to='images/', max_length=500, null=True)
+    foto = models.FileField(upload_to='images/', max_length=500, null=True, storage=custom_storage)
 
 
 
@@ -539,23 +607,29 @@ class BannerPrincipal(models.Model):
             super().save(*args, **kwargs)
 
         else:
-            if hasattr(self, 'foto') and self.foto:
-            # Normaliza el nombre del archivo sin alterar la ruta de guardado
-                normalized_name = self.normalize_file_name(self.foto.name)
-                # Construye la ruta completa donde se guardaría la imagen
-                file_path = self.get_upload_path(normalized_name)
+            if not self.pk:  # Verifica si es una instancia nueva (sin PK aún)
+                existing_image = BannerPrincipal.objects.filter(foto=self.foto.name).first()
+                if existing_image:
+                    # Si existe, reutiliza la ruta de la imagen existente
+                    self.foto = existing_image.foto
+            super().save(*args, **kwargs)
+            # if hasattr(self, 'foto') and self.foto:
+            # # Normaliza el nombre del archivo sin alterar la ruta de guardado
+            #     normalized_name = self.normalize_file_name(self.foto.name)
+            #     # Construye la ruta completa donde se guardaría la imagen
+            #     file_path = self.get_upload_path(normalized_name)
 
-                if default_storage.exists(file_path):
-                    # Si el archivo ya existe, reutiliza la misma ruta
-                    self.foto = 'images/' + self.foto.name
-                else:
-                    # Si el archivo no existe, procede con el guardado normal
-                    self.foto = 'images/' + self.foto.name
-                    super(BannerPrincipal, self).save(*args, **kwargs)
-                    return  # Sal del método después de guardar para evitar llamadas duplicadas a save()
+            #     if default_storage.exists(file_path):
+            #         # Si el archivo ya existe, reutiliza la misma ruta
+            #         self.foto = 'images/' + self.foto.name
+            #     else:
+            #         # Si el archivo no existe, procede con el guardado normal
+            #         self.foto = 'images/' + self.foto.name
+            #         super(BannerPrincipal, self).save(*args, **kwargs)
+            #         return  # Sal del método después de guardar para evitar llamadas duplicadas a save()
 
-            # Si no hay foto o el atributo 'foto' no existe, o el archivo ya existe y no necesita ser guardado de nuevo
-                super(BannerPrincipal, self).save(*args, **kwargs)
+            # # Si no hay foto o el atributo 'foto' no existe, o el archivo ya existe y no necesita ser guardado de nuevo
+            #     super(BannerPrincipal, self).save(*args, **kwargs)
 
 
     def normalize_file_name(self, filename):

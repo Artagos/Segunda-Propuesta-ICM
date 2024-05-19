@@ -68,7 +68,7 @@ CKEDITOR_CONFIGS = {
     'default': {
         'toolbar': 'Custom',
         'toolbar_Custom': [
-            ['Font', 'FontSize'],
+            ['Font'],
             ['TextColor', 'BGColor'],
             ['Bold', 'Italic', 'Underline'],
             ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'],
@@ -84,7 +84,7 @@ CKEDITOR_CONFIGS = {
     'small': {
         'toolbar': 'full',
         'toolbar_full': [
-            ['Font', 'FontSize'],
+            ['Font'],
             ['TextColor', 'BGColor'],
             ['Bold', 'Italic', 'Underline'],
             ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'],
@@ -100,6 +100,10 @@ CKEDITOR_CONFIGS = {
     },
 }
 CKEDITOR_UPLOAD_PATH = "/media/"
+
+
+
+# DEFAULT_FILE_STORAGE = 'yourapp.storage.CustomStorage'
 
 
 MIDDLEWARE = [
